@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/Trofleb/mtg-api/compare/v1.0.0...v1.1.0) (2025-01-19)
+
+
+### Features
+
+* Add initial FastAPI and Streamlit application structure with event management features ([868918b](https://github.com/Trofleb/mtg-api/commit/868918bb6140e0e45e51b9afd8b5528d8da10a54))
+
 # 1.0.0 (2025-01-19)
 
 
