@@ -7,17 +7,15 @@ authors = [
 license = "GNU GPL v3"
 readme = "README.md"
 dynamic = ["version"]
-requires-python = ">=3.13"
+requires-python = "<4.0,>=3.13"
 dependencies = [
-    "fastapi>=0.115.6",
-    "uvicorn>=0.34.0",
+    "fastapi[standard] (>=0.115.6,<0.116.0)",
+    "dateparser (>=1.2.0,<2.0.0)",
 ]
-
-[project.scripts]
-start = "uvicorn main:app --reload"
 
 [tool.poetry]
 version = "0.1.0"
+package-mode = false
 
 
 [tool.poetry.group.tests.dependencies]
@@ -28,6 +26,12 @@ pytest = "^8.3.4"
 ruff = "^0.9.2"
 pre-commit = "^4.0.1"
 isort = "^5.13.2"
+
+
+[tool.poetry.group.app.dependencies]
+streamlit = "^1.41.1"
+streamlit-calendar = "^1.2.1"
+streamlit-shadcn-ui = "^0.1.18"
 
 [build-system]
 requires = ["poetry-core"]
