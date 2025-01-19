@@ -1,0 +1,37 @@
+[project]
+name = "mtg-api"
+description = "MTG APIs from Nicolas Casademont"
+authors = [
+    {name = "Pradyun Gedam", email = "pradyun@example.com"},
+]
+license = "GNU GPL v3"
+readme = "README.md"
+dynamic = ["version"]
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.115.6",
+    "uvicorn>=0.34.0",
+]
+
+[project.scripts]
+start = "uvicorn main:app --reload"
+
+[tool.poetry]
+version = "0.1.0"
+
+
+[tool.poetry.group.tests.dependencies]
+pytest = "^8.3.4"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.9.2"
+pre-commit = "^4.0.1"
+isort = "^5.13.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+extend-select = ["I"]
