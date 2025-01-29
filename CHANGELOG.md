@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/Trofleb/mtg-api/compare/v1.1.0...v1.2.0) (2025-01-29)
+
+
+### Features
+
+* Setup DB for the cards from scryfall ([7b6769a](https://github.com/Trofleb/mtg-api/commit/7b6769a0202bc6ef833387d83b4e4ae27f400369))
+
 # [1.1.0](https://github.com/Trofleb/mtg-api/compare/v1.0.0...v1.1.0) (2025-01-19)
 
 
