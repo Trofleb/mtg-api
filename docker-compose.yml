@@ -1,7 +1,6 @@
-version: '3.8'
-
 services:
   api:
+    platform: linux/x86_64
     build:
       context: .
       dockerfile: Dockerfile.api
@@ -18,6 +17,7 @@ services:
       - --host
       - '0.0.0.0'
   app:
+    platform: linux/x86_64
     build:
       context: .
       dockerfile: Dockerfile.app
@@ -26,7 +26,19 @@ services:
       - ./app/pages:/code/pages
       - ./app/dialog:/code/dialog
       - ./common:/code/common
+      - ./data:/data
     env_file:
       - .env
     ports:
       - "8501:8501"
+  db:
+    platform: linux/x86_64
+    image: bitnami/mongodb:8.0.4
+    volumes:
+      - ./data/db:/bitnami/mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGODB_USERNAME=root
+      - MONGODB_PASSWORD=root
+      - MONGODB_ROOT_PASSWORD=root
