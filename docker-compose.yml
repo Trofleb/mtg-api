@@ -30,15 +30,18 @@ services:
     env_file:
       - .env
     ports:
-      - "8501:8501"
+      - "80:8501"
   db:
     platform: linux/x86_64
     image: bitnami/mongodb:8.0.4
     volumes:
-      - ./data/db:/bitnami/mongodb
+      - cards_data:/bitnami/mongodb
     ports:
       - "27017:27017"
     environment:
       - MONGODB_USERNAME=root
       - MONGODB_PASSWORD=root
       - MONGODB_ROOT_PASSWORD=root
+
+volumes:
+  cards_data:
