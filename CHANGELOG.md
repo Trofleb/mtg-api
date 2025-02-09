@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/Trofleb/mtg-api/compare/v1.2.0...v1.3.0) (2025-02-09)
+
+
+### Features
+
+* Card router with search ([206b2d9](https://github.com/Trofleb/mtg-api/commit/206b2d98af8f8683ab39fe7780ab94cea7938587))
+
 # [1.2.0](https://github.com/Trofleb/mtg-api/compare/v1.1.0...v1.2.0) (2025-01-29)
 
 
