@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/Trofleb/mtg-api/compare/v1.3.0...v1.4.0) (2025-03-02)
+
+
+### Features
+
+* Improve app ([df98ed2](https://github.com/Trofleb/mtg-api/commit/df98ed22d79a2ca72cffa89fab1214fedde89658))
+
 # [1.3.0](https://github.com/Trofleb/mtg-api/compare/v1.2.0...v1.3.0) (2025-02-09)
 
 
