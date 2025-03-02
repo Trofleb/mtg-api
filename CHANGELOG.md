@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/Trofleb/mtg-api/compare/v1.4.0...v1.5.0) (2025-03-02)
+
+
+### Features
+
+* Push db update code ([53d4890](https://github.com/Trofleb/mtg-api/commit/53d4890f1d9f45f578a0450d471b6990cc638195))
+
 # [1.4.0](https://github.com/Trofleb/mtg-api/compare/v1.3.0...v1.4.0) (2025-03-02)
 
 
