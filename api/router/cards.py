@@ -1,5 +1,8 @@
+from typing import Optional
 from pydantic import AnyUrl, BaseModel
 from pymongo import MongoClient
+from unidecode import unidecode
+from api.helpers.cards_mongo import CARD_PROJECTION, AGGREGATE_CARD
 from common.constants import (
     DATABASE_USER,
     DATABASE_PASSWORD,
@@ -40,8 +43,59 @@ class OracleCard:
     cards: list[Card]
 
 
+class CardFilter(BaseModel):
+    sets: Optional[list[str]] = None
+
+
+@router.get("/cards/{name}")
+def read_root(
+    name: str,
+    lang: str = "en",
+    set: str = None,
+    num: str = None,
+):
+    search_name = unidecode(name).lower()
+    results = [
+        card
+        for card in collection.aggregate(
+            [
+                {
+                    "$match": {
+                        "name_search": {
+                            "$regex": f"^{search_name}",
+                        },
+                    }
+                },
+                {"$project": CARD_PROJECTION},
+                {"$sort": {"released_at": -1}},
+                {
+                    "$match": {
+                        "lang": {"$eq": lang},
+                        "layout": {
+                            "$nin": ["art_series"],
+                        },
+                        "set": ({"$eq": set.lower()} if set else {"$exists": True}),
+                    }
+                },
+                {"$group": AGGREGATE_CARD},
+            ]
+        )
+    ]
+
+    if len(results) == 0:
+        return None
+
+    return results[0]
+
+
 @router.get("/cards/search/{text}")
-def read_root(text: str, lang: str = "en", cursor: str = None, page_count=10):
+def read_root(
+    text: str,
+    lang: str = "en",
+    cursor: str = None,
+    page_count=10,
+    card_filter: CardFilter = None,
+):
     results = [
         card
         for card in collection.aggregate(
@@ -54,87 +108,15 @@ def read_root(text: str, lang: str = "en", cursor: str = None, page_count=10):
                             "$diacriticSensitive": False,
                         },
                         "lang": {"$eq": lang},
+                        "set_name": (
+                            {"$in": card_filter.sets}
+                            if card_filter and card_filter.sets
+                            else {"$exists": True}
+                        ),
                     }
                 },
-                {
-                    "$project": {
-                        "_id": 0,
-                        "id": 1,
-                        "name": 1,
-                        "oracle_id": 1,
-                        "lang": 1,
-                        "oracle_text": 1,
-                        "set_name": 1,
-                        # "frame": 1,
-                        # "reserved": 1,
-                        # "full_art": 1,
-                        # "textless": 1,
-                        "artist": 1,
-                        # "booster": 1,
-                        # "attraction_lights": 1,
-                        "layout": 1,
-                        # "story_spotlight": 1,
-                        # "artist_ids": 1,
-                        # "border_color": 1,
-                        # "card_back_id": 1,
-                        # "collector_number": 1,
-                        # "content_warning": 1,
-                        # "digital": 1,
-                        # "finishes": 1,
-                        "flavor_name": 1,
-                        "flavor_text": 1,
-                        # "frame_effects": 1,
-                        "games": 1,
-                        # "highres_image": 1,
-                        # "illustration_id": 1,
-                        # "image_status": 1,
-                        # "image_uris": 1,
-                        # "oversized": 1,
-                        # "prices": 1,
-                        # "printed_name": 1,
-                        # "printed_text": 1,
-                        # "printed_type_line": 1,
-                        "promo": 1,
-                        # "promo_types": 1,
-                        # "purchase_uris": 1,
-                        "rarity": 1,
-                        "related_uris": 1,
-                        "released_at": 1,
-                        "reprint": 1,
-                        # "scryfall_set_uri": 1,
-                        "set_name": 1,
-                        # "set_search_uri": 1,
-                        # "set_type": 1,
-                        # "set_uri": 1,
-                        "set": 1,
-                        # "set_id": 1,
-                        # "textless": 1,
-                        "variation": 1,
-                        "variation_of": 1,
-                        "security_stamp": 1,
-                        "watermark": 1,
-                        # "preview_previewed_at": 1,
-                        # "preview_source_uri": 1,
-                        # "preview_source": 1,
-                        "thumbnail": "$image_uris.small",
-                        "image": "$image_uris.large",
-                        "imageXL": "$image_uris.png",
-                        "score": {"$meta": "textScore"},
-                    }
-                },
-                {
-                    "$group": {
-                        "_id": "$oracle_id",
-                        "name": {"$first": "$name"},
-                        "card_text": {"$first": "$oracle_text"},
-                        "card_count": {"$sum": 1},
-                        "cards": {"$addToSet": "$$ROOT"},
-                        "score": {"$max": {"$meta": "textScore"}},
-                        "edhrec_rank": {"$max": "$edhrec_rank"},
-                        "penny_rank": {"$max": "$penny_rank"},
-                        "thumbnail": {"$first": "$thumbnail"},
-                    }
-                },
+                {"$project": {"score": 1, **CARD_PROJECTION}},
+                {"$group": {"score": {"$max": "$score"}, **AGGREGATE_CARD}},
                 {"$sort": {"score": -1}},
                 (
                     {
@@ -166,5 +148,4 @@ def read_root(text: str, lang: str = "en", cursor: str = None, page_count=10):
         "has_more": len(results) > page_count,
     }
 
-    print(result)
     return result

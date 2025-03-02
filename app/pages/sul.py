@@ -16,6 +16,9 @@ st.set_page_config(
     page_icon="👋",
 )
 
+st.warning("This is a work in progress, please don't share the link yet.")
+st.stop()
+
 
 class MTGEvent(TypedDict):
     api_url: str

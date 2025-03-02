@@ -11,6 +11,9 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    environment:
+      - MEILI_HTTP_ADDR=http://meilisearch:7700
+      - MEILI_API_KEY=2AB8F223884CE
     command:
       - dev
       - api/main.py
@@ -25,12 +28,15 @@ services:
       - ./app/app.py:/code/app.py
       - ./app/pages:/code/pages
       - ./app/dialog:/code/dialog
+      - ./app/utils:/code/utils
       - ./common:/code/common
       - ./data:/data
     env_file:
       - .env
     ports:
       - "80:8501"
+      - "443:8501"
+      - "8501:8501"
   db:
     platform: linux/x86_64
     image: bitnami/mongodb:8.0.4
@@ -42,6 +48,14 @@ services:
       - MONGODB_USERNAME=root
       - MONGODB_PASSWORD=root
       - MONGODB_ROOT_PASSWORD=root
+  meilisearch:
+    image: getmeili/meilisearch:v1.12.8
+    ports:
+      - "7700:7700"
+    volumes:
+      - ./data/meili:/meili_data
+    environment:
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY}
 
 volumes:
   cards_data:
