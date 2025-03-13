@@ -13,7 +13,7 @@ services:
       - .env
     environment:
       - MEILI_HTTP_ADDR=http://meilisearch:7700
-      - MEILI_API_KEY=2AB8F223884CE
+      - MEILI_API_KEY=${MEILI_MASTER_KEY}
     command:
       - dev
       - api/main.py
@@ -37,6 +37,17 @@ services:
       - "80:8501"
       - "443:8501"
       - "8501:8501"
+  huey:
+    platform: linux/x86_64
+    build:
+      context: .
+      dockerfile: Dockerfile.huey
+    volumes:
+      - ./tasks:/code/tasks
+      - ./common:/code/common
+      - ./data:/code/db
+    env_file:
+      - .env
   db:
     platform: linux/x86_64
     image: bitnami/mongodb:8.0.4
@@ -48,6 +59,25 @@ services:
       - MONGODB_USERNAME=root
       - MONGODB_PASSWORD=root
       - MONGODB_ROOT_PASSWORD=root
+  cache:
+    platform: linux/x86_64
+    image: redis/redis-stack:7.4.0-v3
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+  influx:
+    platform: linux/x86_64
+    image: quay.io/influxdb/influxdb3-core:latest
+    user: 1500:1500
+    volumes:
+      - influx_data:/home/influxdb3/.influxdb3
+    command:
+      - serve
+      - --node-id=my_host
+      - --object-store=file
+      - --data-dir=/home/influxdb3/.influxdb3
+    ports:
+      - "8181:8181"
   meilisearch:
     image: getmeili/meilisearch:v1.12.8
     ports:
@@ -59,3 +89,6 @@ services:
 
 volumes:
   cards_data:
+  influx_data:
+
+

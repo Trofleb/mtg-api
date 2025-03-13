@@ -1,11 +1,11 @@
+import os
 from langchain_core.embeddings import Embeddings
 import requests
 from time import sleep
 
-from tqdm import tqdm
 
-TOKEN = "x"
-PRODUCT_ID = "101420"
+TOKEN = os.environ.get("IK_API_KEY", "NOKEY")
+PRODUCT_ID = os.environ.get("IK_PRODUCT_ID", "NOPRODID")
 URL = f"https://api.infomaniak.com/1/ai/{PRODUCT_ID}/openai/v1"
 
 

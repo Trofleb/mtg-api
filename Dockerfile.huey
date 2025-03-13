@@ -12,9 +12,9 @@ RUN poetry config virtualenvs.create false \
     && poetry install
 
 COPY common/ ./common
-COPY api/ ./api
+COPY tasks/ ./tasks
 
-EXPOSE 8000
+# EXPOSE 8000
 
-ENTRYPOINT [ "fastapi" ]
-CMD [ "run", "api/main.py" ]
+ENTRYPOINT [ "huey_consumer.py" ]
+CMD [ "tasks.tasks.huey" ]

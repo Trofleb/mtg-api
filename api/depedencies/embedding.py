@@ -10,7 +10,7 @@ from common.infomaniak.ik_embeddings import IKEmbeddings
 def get_meilisearch_client():
     return meilisearch.Client(
         url=os.environ.get("MEILI_HTTP_ADDR", "http://localhost:7700"),
-        api_key=os.environ.get("MEILI_API_KEY", "x"),
+        api_key=os.environ.get("MEILI_API_KEY", "NOKEY"),
     )
 
 

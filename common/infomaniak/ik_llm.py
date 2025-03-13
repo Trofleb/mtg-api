@@ -1,11 +1,12 @@
 import json
+import os
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import BaseMessage, convert_to_openai_messages
 from requests import get, post
 import streamlit as st
 
-TOKEN = "x"
-PRODUCT_ID = "101420"
+TOKEN = os.environ.get("IK_API_KEY", "NOKEY")
+PRODUCT_ID = os.environ.get("IK_PRODUCT_ID", "NOPRODID")
 URL = f"https://api.infomaniak.com/1/ai/{PRODUCT_ID}/openai"
 MODEL = "llama3"
 
