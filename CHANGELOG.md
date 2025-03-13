@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/Trofleb/mtg-api/compare/v1.5.0...v1.6.0) (2025-03-13)
+
+
+### Features
+
+* Add auto update db ([7343440](https://github.com/Trofleb/mtg-api/commit/7343440feb83df98d2406b6cd4a43d6f6e231173))
+
 # [1.5.0](https://github.com/Trofleb/mtg-api/compare/v1.4.0...v1.5.0) (2025-03-02)
 
 
