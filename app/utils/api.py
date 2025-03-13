@@ -1,6 +1,6 @@
-import streamlit as st
 from typing import Optional
 
+import streamlit as st
 from requests import get
 
 from common.scyfall_models import PrintedCard

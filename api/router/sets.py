@@ -1,16 +1,14 @@
-from pydantic import AnyUrl, BaseModel
-from pymongo import MongoClient
-from common.constants import (
-    DATABASE_USER,
-    DATABASE_PASSWORD,
-    DATABASE_HOST,
-    DATABASE_PORT,
-    DATABASE,
-)
-
 from fastapi.routing import APIRouter
+from pydantic import BaseModel
+from pymongo import MongoClient
 
-from common.scyfall_models import PrintedCard
+from common.constants import (
+    DATABASE,
+    DATABASE_HOST,
+    DATABASE_PASSWORD,
+    DATABASE_PORT,
+    DATABASE_USER,
+)
 
 router = APIRouter()
 

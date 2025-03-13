@@ -1,15 +1,13 @@
 import os
 from typing import Annotated
+
 from fastapi import Depends
 from fastapi.responses import StreamingResponse
 from fastapi.routing import APIRouter
 from langchain_community.vectorstores import Meilisearch
-from api.depedencies.embedding import MeilisearchClient
-from langchain_core.messages import (
-    SystemMessage,
-    HumanMessage,
-)
+from langchain_core.messages import HumanMessage, SystemMessage
 
+from api.depedencies.embedding import MeilisearchClient
 from common.infomaniak.ik_embeddings import IKEmbeddings
 from common.infomaniak.ik_llm import manual_chat_call
 

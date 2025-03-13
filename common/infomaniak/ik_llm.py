@@ -1,22 +1,25 @@
 import json
 import os
-from langchain_openai import ChatOpenAI
-from langchain_core.messages import BaseMessage, convert_to_openai_messages
-from requests import get, post
+
 import streamlit as st
+from langchain_core.messages import BaseMessage, convert_to_openai_messages
+from langchain_openai import ChatOpenAI
+from requests import post
 
 TOKEN = os.environ.get("IK_API_KEY", "NOKEY")
 PRODUCT_ID = os.environ.get("IK_PRODUCT_ID", "NOPRODID")
 URL = f"https://api.infomaniak.com/1/ai/{PRODUCT_ID}/openai"
 MODEL = "llama3"
 
-IKLLM = lambda: ChatOpenAI(
-    api_key=TOKEN,
-    base_url=URL,
-    model=MODEL,
-    temperature=0.6,
-    top_p=0.95,
-)
+
+def get_ik_llm():
+    return ChatOpenAI(
+        api_key=TOKEN,
+        base_url=URL,
+        model=MODEL,
+        temperature=0.6,
+        top_p=0.95,
+    )
 
 
 def manual_chat_call(messages: list[BaseMessage]):

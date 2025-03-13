@@ -1,11 +1,12 @@
-from datetime import datetime
 import logging
 import os
-from pymongo import InsertOne, MongoClient, UpdateOne
-from unidecode import unidecode
+from datetime import datetime
 from urllib.request import urlretrieve
+
 import ijson
+from pymongo import InsertOne, MongoClient, UpdateOne
 from requests import get
+from unidecode import unidecode
 
 from tasks.obj_utils import yield_differences
 

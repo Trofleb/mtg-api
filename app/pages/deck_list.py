@@ -1,6 +1,5 @@
-from requests import get
 import streamlit as st
-
+from requests import get
 from utils.parse_cards import CardSearch, parse_deck_string
 
 st.set_page_config(
@@ -60,7 +59,7 @@ for i, card in enumerate([card for card in card_list if card[1]]):
     col = cols[i % width]
     with col:
         st.html(
-            f'<div style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">{card_info['name']}</div>',
+            f'<div style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">{card_info["name"]}</div>',
         )
         # st.write(oracle_card)
         if oracle_card.get("thumbnail"):

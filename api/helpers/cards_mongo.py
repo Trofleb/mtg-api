@@ -44,7 +44,6 @@ CARD_PROJECTION = {
     "released_at": 1,
     "reprint": 1,
     # "scryfall_set_uri": 1,
-    "set_name": 1,
     # "set_search_uri": 1,
     # "set_type": 1,
     # "set_uri": 1,

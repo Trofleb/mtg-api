@@ -1,7 +1,7 @@
-from enum import Enum
-from pydantic import BaseModel, UUID4, AnyUrl
-from typing import List, Literal, Optional, Dict
 from datetime import date
+from typing import Dict, List, Literal, Optional
+
+from pydantic import UUID4, AnyUrl, BaseModel
 
 Color = Literal["W", "U", "B", "R", "G"]
 

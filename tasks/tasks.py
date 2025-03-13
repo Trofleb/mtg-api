@@ -1,5 +1,6 @@
 # demo.py
 from huey import SqliteHuey, crontab
+
 from tasks.ifetch_dataset import i_fetch_dataset
 
 huey = SqliteHuey(filename="./db/huey.db")

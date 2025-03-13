@@ -1,7 +1,5 @@
 import streamlit as st
-
-from utils.api import search_cards, all_sets
-
+from utils.api import all_sets, search_cards
 
 st.set_page_config(
     page_title="Magic the Gathening card search",

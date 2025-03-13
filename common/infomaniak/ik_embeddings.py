@@ -1,8 +1,8 @@
 import os
-from langchain_core.embeddings import Embeddings
-import requests
 from time import sleep
 
+import requests
+from langchain_core.embeddings import Embeddings
 
 TOKEN = os.environ.get("IK_API_KEY", "NOKEY")
 PRODUCT_ID = os.environ.get("IK_PRODUCT_ID", "NOPRODID")

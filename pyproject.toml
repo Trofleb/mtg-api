@@ -54,5 +54,6 @@ ipykernel = "^6.29.5"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.ruff]
+[tool.ruff.lint]
 extend-select = ["I"]
+ignore = ["E402"]

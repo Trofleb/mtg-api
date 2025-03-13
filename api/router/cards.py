@@ -1,18 +1,18 @@
 from typing import Optional
+
+from fastapi.routing import APIRouter
 from pydantic import AnyUrl, BaseModel
 from pymongo import MongoClient
 from unidecode import unidecode
-from api.helpers.cards_mongo import CARD_PROJECTION, AGGREGATE_CARD
+
+from api.helpers.cards_mongo import AGGREGATE_CARD, CARD_PROJECTION
 from common.constants import (
-    DATABASE_USER,
-    DATABASE_PASSWORD,
-    DATABASE_HOST,
-    DATABASE_PORT,
     DATABASE,
+    DATABASE_HOST,
+    DATABASE_PASSWORD,
+    DATABASE_PORT,
+    DATABASE_USER,
 )
-
-from fastapi.routing import APIRouter
-
 from common.scyfall_models import PrintedCard
 
 router = APIRouter()
@@ -48,7 +48,7 @@ class CardFilter(BaseModel):
 
 
 @router.get("/cards/{name}")
-def read_root(
+def search_card_by_name(
     name: str,
     lang: str = "en",
     set: str = None,
@@ -89,7 +89,7 @@ def read_root(
 
 
 @router.get("/cards/search/{text}")
-def read_root(
+def search_card_by_text(
     text: str,
     lang: str = "en",
     cursor: str = None,

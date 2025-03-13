@@ -1,10 +1,8 @@
-from typing import Annotated
-from fastapi import Depends
-from langchain_community.vectorstores import Meilisearch
-import meilisearch
 import os
+from typing import Annotated
 
-from common.infomaniak.ik_embeddings import IKEmbeddings
+import meilisearch
+from fastapi import Depends
 
 
 def get_meilisearch_client():

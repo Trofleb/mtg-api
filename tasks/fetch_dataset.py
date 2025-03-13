@@ -1,15 +1,15 @@
-from copy import deepcopy
+import json
 import logging
 import os
-import json
-from requests import get
-from urllib.request import urlretrieve
-from tqdm import tqdm
-from pymongo import InsertOne, MongoClient, UpdateOne
-from unidecode import unidecode
-from tasks.indexes import INDEX_BASE, TEXT_INDEX, TEXT_INDEX_OPTION
 from datetime import datetime
+from urllib.request import urlretrieve
 
+from pymongo import InsertOne, MongoClient, UpdateOne
+from requests import get
+from tqdm import tqdm
+from unidecode import unidecode
+
+from tasks.indexes import INDEX_BASE, TEXT_INDEX, TEXT_INDEX_OPTION
 from tasks.obj_utils import yield_differences
 
 DOWNLOAD_FILENAME = "latest_cards.json"

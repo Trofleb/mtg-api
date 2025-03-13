@@ -88,5 +88,3 @@ services:
 volumes:
   cards_data:
   influx_data:
-
-

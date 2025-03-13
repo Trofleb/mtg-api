@@ -2,9 +2,6 @@
 import re
 from typing import Optional, TypedDict
 
-from pydantic import BaseModel
-
-
 REGEX_MOXFIELD = r"^(?:(?P<count>\d+) )?(?P<name>[^\<\[\(\n]*)\b(?: \((?P<set>[^\<\[\(\n]*)\))(?: (?P<num>[A-Z1-9]*-?\d+))$"
 # 1 Agonasaur Rex
 REGEX_MTGAO = r"^(?:(?P<count>\d+) )?(?P<name>[^\<\[\(]*)$"

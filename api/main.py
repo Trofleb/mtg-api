@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from api.router import base, cards, sets, dnd_rules, mtg_rules
+from api.router import base, cards, dnd_rules, mtg_rules, sets
 
 app = FastAPI()
 

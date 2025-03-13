@@ -1,5 +1,6 @@
 from functools import reduce
 from typing import Optional
+
 import streamlit as st
 import streamlit_shadcn_ui as ui
 from requests import get
