@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/Trofleb/mtg-api/compare/v1.6.0...v1.7.0) (2025-03-14)
+
+
+### Features
+
+* Activate sul page ([32f749d](https://github.com/Trofleb/mtg-api/commit/32f749dc68b49010e5ab97f869482862eed6ac87))
+
 # [1.6.0](https://github.com/Trofleb/mtg-api/compare/v1.5.0...v1.6.0) (2025-03-13)
 
 
