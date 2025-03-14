@@ -17,7 +17,7 @@ st.set_page_config(
 )
 
 st.warning("This is a work in progress, please don't share the link yet.")
-st.stop()
+# st.stop()
 
 
 class MTGEvent(TypedDict):
