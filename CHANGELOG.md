@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/Trofleb/mtg-api/compare/v1.7.0...v1.8.0) (2025-03-15)
+
+
+### Features
+
+* Add hardcoded hostname ([fcd4d35](https://github.com/Trofleb/mtg-api/commit/fcd4d35b1707d59340446e6c7d7d1de8fbca0cfc))
+
 # [1.7.0](https://github.com/Trofleb/mtg-api/compare/v1.6.0...v1.7.0) (2025-03-14)
 
 
