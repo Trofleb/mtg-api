@@ -1,10 +1,12 @@
 services:
   api:
     platform: linux/x86_64
-    hostname: mtg-api
     build:
       context: .
       dockerfile: Dockerfile.api
+    restart: always
+    networks:
+      - dokploy-network
     volumes:
       - ./api:/code/api
       - ./common:/code/common
@@ -22,10 +24,12 @@ services:
       - '0.0.0.0'
   app:
     platform: linux/x86_64
-    hostname: demo-app
     build:
       context: .
       dockerfile: Dockerfile.app
+    restart: always
+    networks:
+      - dokploy-network
     volumes:
       - ./app/app.py:/code/app.py
       - ./app/pages:/code/pages
@@ -39,10 +43,12 @@ services:
       - "8501:8501"
   huey:
     platform: linux/x86_64
-    hostname: huey
     build:
       context: .
       dockerfile: Dockerfile.huey
+    restart: always
+    networks:
+      - dokploy-network
     volumes:
       - ./tasks:/code/tasks
       - ./common:/code/common
@@ -51,8 +57,10 @@ services:
       - .env
   db:
     platform: linux/x86_64
-    hostname: db
     image: bitnami/mongodb:8.0.4
+    restart: always
+    networks:
+      - dokploy-network
     volumes:
       - cards_data:/bitnami/mongodb
     ports:
@@ -63,16 +71,20 @@ services:
       - MONGODB_ROOT_PASSWORD=root
   cache:
     platform: linux/x86_64
-    hostname: cache
     image: redis/redis-stack:7.4.0-v3
+    restart: always
+    networks:
+      - dokploy-network
     ports:
       - "6379:6379"
       - "8001:8001"
   influx:
     platform: linux/x86_64
-    hostname: influx
     image: quay.io/influxdb/influxdb3-core:latest
     user: 1500:1500
+    restart: always
+    networks:
+      - dokploy-network
     volumes:
       - influx_data:/home/influxdb3/.influxdb3
     command:
@@ -84,7 +96,9 @@ services:
       - "8181:8181"
   meilisearch:
     image: getmeili/meilisearch:v1.12.8
-    hostname: meilisearch
+    restart: always
+    networks:
+      - dokploy-network
     ports:
       - "7700:7700"
     volumes:
@@ -95,3 +109,8 @@ services:
 volumes:
   cards_data:
   influx_data:
+
+
+networks:
+  dokploy-network:
+    external: true
