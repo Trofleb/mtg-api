@@ -1,3 +1,10 @@
+## [1.8.1](https://github.com/Trofleb/mtg-api/compare/v1.8.0...v1.8.1) (2025-03-15)
+
+
+### Bug Fixes
+
+* Adapt docker compose to dockploy ([9fbfa01](https://github.com/Trofleb/mtg-api/commit/9fbfa01def9cd2fe0410056eb8072511e0f697c1))
+
 # [1.8.0](https://github.com/Trofleb/mtg-api/compare/v1.7.0...v1.8.0) (2025-03-15)
 
 
