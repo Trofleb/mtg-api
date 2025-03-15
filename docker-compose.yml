@@ -1,6 +1,7 @@
 services:
   api:
     platform: linux/x86_64
+    hostname: mtg-api
     build:
       context: .
       dockerfile: Dockerfile.api
@@ -21,6 +22,7 @@ services:
       - '0.0.0.0'
   app:
     platform: linux/x86_64
+    hostname: demo-app
     build:
       context: .
       dockerfile: Dockerfile.app
@@ -37,6 +39,7 @@ services:
       - "8501:8501"
   huey:
     platform: linux/x86_64
+    hostname: huey
     build:
       context: .
       dockerfile: Dockerfile.huey
@@ -48,6 +51,7 @@ services:
       - .env
   db:
     platform: linux/x86_64
+    hostname: db
     image: bitnami/mongodb:8.0.4
     volumes:
       - cards_data:/bitnami/mongodb
@@ -59,12 +63,14 @@ services:
       - MONGODB_ROOT_PASSWORD=root
   cache:
     platform: linux/x86_64
+    hostname: cache
     image: redis/redis-stack:7.4.0-v3
     ports:
       - "6379:6379"
       - "8001:8001"
   influx:
     platform: linux/x86_64
+    hostname: influx
     image: quay.io/influxdb/influxdb3-core:latest
     user: 1500:1500
     volumes:
@@ -78,6 +84,7 @@ services:
       - "8181:8181"
   meilisearch:
     image: getmeili/meilisearch:v1.12.8
+    hostname: meilisearch
     ports:
       - "7700:7700"
     volumes:
