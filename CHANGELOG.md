@@ -1,3 +1,10 @@
+## [1.9.1](https://github.com/Trofleb/mtg-api/compare/v1.9.0...v1.9.1) (2025-03-24)
+
+
+### Bug Fixes
+
+* Try to keep python at 3.13 ([5a1fa02](https://github.com/Trofleb/mtg-api/commit/5a1fa02fbca82a242f7c882b601a8b45708b1dbf))
+
 # [1.9.0](https://github.com/Trofleb/mtg-api/compare/v1.8.1...v1.9.0) (2025-03-24)
 
 
