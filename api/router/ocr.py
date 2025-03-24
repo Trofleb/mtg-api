@@ -40,16 +40,16 @@ async def ocr_file(file: UploadFile):
         )
 
     if file.content_type == "application/pdf":
-        doc = pymupdf.open(file.file)
+        doc = pymupdf.open(stream=await file.read())
         text_pages = []
         for page in doc:
             pix = page.get_pixmap()
-            page_image = base64.b64encode(pix.tobytes("png")).decode()
+            page_image = pix.tobytes("png")
             text = page.get_text().encode("utf8")
             parsed_text = ocr_image(page_image, text)
             text_pages.append(parsed_text)
 
-        return JSONResponse(content={"text": "---".join(text_pages)})
+        return JSONResponse(content={"text": "\n\n---\n\n".join(text_pages)})
 
     elif file.content_type == "image/png":
         image = file.file.read()
