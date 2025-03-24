@@ -49,7 +49,7 @@ async def ocr_file(file: UploadFile):
             parsed_text = ocr_image(page_image, text)
             text_pages.append(parsed_text)
 
-        return JSONResponse(content={"text": "---".join(text_pages)})
+        return JSONResponse(content={"text": "\n\n---\n\n".join(text_pages)})
 
     elif file.content_type == "image/png":
         image = file.file.read()
