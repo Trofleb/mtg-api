@@ -1,5 +1,5 @@
 import streamlit as st
-from requests import get
+from requests import post
 
 st.set_page_config(
     page_title="Magic the Gathening cards",
@@ -15,7 +15,12 @@ if not file:
 
 
 def get_ocr(file):
-    response = get("http://api:8000/ocr", files={"file": file})
+    response = post("http://api:8000/ocr", files={"file": file})
+    if response.status_code != 200:
+        st.error(
+            f"Failed to OCR file: {response.reason}(status code: {response.status_code}): {response.text}"
+        )
+        return "Error"
     return response.json()["text"]
 
 
