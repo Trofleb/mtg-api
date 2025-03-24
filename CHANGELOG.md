@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/Trofleb/mtg-api/compare/v1.8.1...v1.9.0) (2025-03-24)
+
+
+### Features
+
+* Add ocr and base for prepare audio text extraction ([0ca6068](https://github.com/Trofleb/mtg-api/commit/0ca6068b1f962d991378f39955c47a88d3e4c6bc))
+
 ## [1.8.1](https://github.com/Trofleb/mtg-api/compare/v1.8.0...v1.8.1) (2025-03-15)
 
 
