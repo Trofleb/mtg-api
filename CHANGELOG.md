@@ -1,3 +1,10 @@
+## [1.9.3](https://github.com/Trofleb/mtg-api/compare/v1.9.2...v1.9.3) (2025-03-24)
+
+
+### Bug Fixes
+
+* Remove hopefully unnecessary depedencies ([8096358](https://github.com/Trofleb/mtg-api/commit/8096358a438592caeccf347d64f19a72801d54f2))
+
 ## [1.9.2](https://github.com/Trofleb/mtg-api/compare/v1.9.1...v1.9.2) (2025-03-24)
 
 
