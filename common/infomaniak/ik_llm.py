@@ -22,13 +22,13 @@ def get_ik_llm():
     )
 
 
-def manual_chat_call(messages: list[BaseMessage]):
+def manual_chat_call(messages: list[BaseMessage], model=MODEL, token=TOKEN):
     req_messages = convert_to_openai_messages(messages)
 
     request = post(
         f"{URL}/chat/completions",
-        json={"messages": req_messages, "model": MODEL, "stream": True},
-        headers={"Authorization": f"Bearer {TOKEN}"},
+        json={"messages": req_messages, "model": model, "stream": True},
+        headers={"Authorization": f"Bearer {token}"},
         stream=True,
     )
 
