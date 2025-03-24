@@ -1,3 +1,10 @@
+## [1.9.2](https://github.com/Trofleb/mtg-api/compare/v1.9.1...v1.9.2) (2025-03-24)
+
+
+### Bug Fixes
+
+* remove olmocr to allow build ([673d323](https://github.com/Trofleb/mtg-api/commit/673d3232a081393435e380a0b47ef47c5c7197cd))
+
 ## [1.9.1](https://github.com/Trofleb/mtg-api/compare/v1.9.0...v1.9.1) (2025-03-24)
 
 
