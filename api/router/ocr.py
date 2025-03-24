@@ -44,7 +44,7 @@ async def ocr_file(file: UploadFile):
         text_pages = []
         for page in doc:
             pix = page.get_pixmap()
-            page_image = base64.b64encode(pix.tobytes("png")).decode()
+            page_image = pix.tobytes("png")
             text = page.get_text().encode("utf8")
             parsed_text = ocr_image(page_image, text)
             text_pages.append(parsed_text)
