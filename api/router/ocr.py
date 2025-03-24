@@ -40,7 +40,7 @@ async def ocr_file(file: UploadFile):
         )
 
     if file.content_type == "application/pdf":
-        doc = pymupdf.open(file.file)
+        doc = pymupdf.open(stream=await file.read())
         text_pages = []
         for page in doc:
             pix = page.get_pixmap()
