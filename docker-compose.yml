@@ -21,14 +21,6 @@ services:
       - UV_COMPILE_BYTECODE=1
       - UV_LINK_MODE=copy
       - UV_CACHE_DIR=/tmp/.uv-cache
-    command:
-      - python
-      - -m
-      - uvicorn
-      - api.main:app
-      - --host
-      - "0.0.0.0"
-      - --reload
     depends_on:
       db:
         condition: service_healthy
