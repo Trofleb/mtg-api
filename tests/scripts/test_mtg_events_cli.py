@@ -4,6 +4,8 @@ Unit tests for scripts.mtg_events CLI.
 Tests CLI interface with different argument combinations and output validation.
 """
 
+import re
+
 # Import the CLI app
 import sys
 from pathlib import Path
@@ -16,6 +18,11 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from scripts.mtg_events import app  # noqa: E402
+
+
+def strip_ansi(text):
+    ansi_escape = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
+    return ansi_escape.sub("", text)
 
 
 class TestMTGEventsCLI:
@@ -48,11 +55,12 @@ class TestMTGEventsCLI:
         """Test list-events command help."""
         result = runner.invoke(app, ["list-events", "--help"])
 
+        to_test = strip_ansi(result.stdout)
         assert result.exit_code == 0
-        assert "--org-id" in result.stdout
-        assert "--days" in result.stdout
-        assert "--format" in result.stdout
-        assert "--debug" in result.stdout
+        assert "--org-id" in to_test
+        assert "--days" in to_test
+        assert "--format" in to_test
+        assert "--debug" in to_test
 
     def test_list_events_success(self, runner):
         """Test successful list-events execution."""
