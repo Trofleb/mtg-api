@@ -1,9 +1,17 @@
+# BuildKit cache configuration for faster builds
+x-build-config: &build-config
+  cache_from:
+    - type=local,src=/tmp/.buildx-cache
+  cache_to:
+    - type=local,dest=/tmp/.buildx-cache-new,mode=max
+
 services:
   api:
     platform: linux/x86_64
     build:
       context: .
       dockerfile: api.dockerfile
+      <<: *build-config
     restart: always
     networks:
       - dokploy-network
@@ -39,6 +47,7 @@ services:
     build:
       context: .
       dockerfile: app.dockerfile
+      <<: *build-config
     restart: always
     networks:
       - dokploy-network
@@ -72,6 +81,7 @@ services:
     build:
       context: .
       dockerfile: huey.dockerfile
+      <<: *build-config
     restart: always
     networks:
       - dokploy-network
@@ -102,6 +112,7 @@ services:
     build:
       context: .
       dockerfile: mcp.dockerfile
+      <<: *build-config
     restart: always
     networks:
       - dokploy-network
