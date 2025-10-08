@@ -1,3 +1,18 @@
+# [1.10.0](https://github.com/Trofleb/mtg-api/compare/v1.9.4...v1.10.0) (2025-10-08)
+
+
+### Bug Fixes
+
+* tests were not running properly because of how ansi characters are managed in linux ([0fd6235](https://github.com/Trofleb/mtg-api/commit/0fd62352a0c22a0b468b87f7392346d4be93dcd9))
+
+
+### Features
+
+* add .dockerignore file and update CI to use docker/build-push-action@v6 ([a854c6c](https://github.com/Trofleb/mtg-api/commit/a854c6ccd17ca6e14f28f142334e6b1d5b75baa2))
+* Add mcp server ([2ec9cfb](https://github.com/Trofleb/mtg-api/commit/2ec9cfbf4a8c2a42b405b2ac91db046b2ab6aa28))
+* enhance CI workflow and Dockerfiles with caching for faster builds ([dc495b5](https://github.com/Trofleb/mtg-api/commit/dc495b5be26c99039a2b67769ee01fd021f64b5f))
+* modernize project structure and add MTG events system ([5dde9f7](https://github.com/Trofleb/mtg-api/commit/5dde9f74a8b9954fb58622a08a0a1a5d4ef949bd)), closes [#10933](https://github.com/Trofleb/mtg-api/issues/10933)
+
 ## [1.9.4](https://github.com/Trofleb/mtg-api/compare/v1.9.3...v1.9.4) (2025-03-24)
 
 
