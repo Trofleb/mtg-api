@@ -1,0 +1,79 @@
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Development tools
+.ruff_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+docs/
+planning/
+CLAUDE.md
+
+# Notebooks and data science
+notebooks/
+*.ipynb
+runs/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Project management
+projects/
+cheatsheets/
+
+# Data and logs
+*.log
+data/
+*.db
+*.sqlite
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Docker
+docker-compose*.yml
+*.dockerfile
+Dockerfile*
+
+# CI/CD
+.github/
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -64,7 +64,7 @@ jobs:
 
       - name: Build API image
         if: steps.filter.outputs.api == 'true'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: api.dockerfile
@@ -99,7 +99,7 @@ jobs:
 
       - name: Build App image
         if: steps.filter.outputs.app == 'true'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: app.dockerfile
@@ -134,7 +134,7 @@ jobs:
 
       - name: Build Huey image
         if: steps.filter.outputs.huey == 'true'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: huey.dockerfile
