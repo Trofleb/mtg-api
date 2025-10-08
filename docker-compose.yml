@@ -1,9 +1,17 @@
+# BuildKit cache configuration for faster builds
+x-build-config: &build-config
+  cache_from:
+    - type=local,src=/tmp/.buildx-cache
+  cache_to:
+    - type=local,dest=/tmp/.buildx-cache-new,mode=max
+
 services:
   api:
     platform: linux/x86_64
     build:
       context: .
-      dockerfile: Dockerfile.api
+      dockerfile: api.dockerfile
+      <<: *build-config
     restart: always
     networks:
       - dokploy-network
@@ -17,16 +25,29 @@ services:
     environment:
       - MEILI_HTTP_ADDR=http://meilisearch:7700
       - MEILI_API_KEY=${MEILI_MASTER_KEY}
-    command:
-      - dev
-      - api/main.py
-      - --host
-      - '0.0.0.0'
+      # uv optimization environment variables
+      - UV_COMPILE_BYTECODE=1
+      - UV_LINK_MODE=copy
+      - UV_CACHE_DIR=/tmp/.uv-cache
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+      meilisearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/ping"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
   app:
     platform: linux/x86_64
     build:
       context: .
-      dockerfile: Dockerfile.app
+      dockerfile: app.dockerfile
+      <<: *build-config
     restart: always
     networks:
       - dokploy-network
@@ -39,25 +60,90 @@ services:
       - ./data:/data
     env_file:
       - .env
+    environment:
+      # uv optimization environment variables
+      - UV_COMPILE_BYTECODE=1
+      - UV_LINK_MODE=copy
+      - UV_CACHE_DIR=/tmp/.uv-cache
     ports:
       - "8501:8501"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
   huey:
     platform: linux/x86_64
     build:
       context: .
-      dockerfile: Dockerfile.huey
+      dockerfile: huey.dockerfile
+      <<: *build-config
     restart: always
     networks:
       - dokploy-network
     volumes:
-      - ./tasks:/code/tasks
-      - ./common:/code/common
-      - ./data:/code/db
+      - ./tasks:/app/tasks
+      - ./common:/app/common
+      - huey_data:/app/db
     env_file:
       - .env
+    environment:
+      # uv optimization environment variables
+      - UV_COMPILE_BYTECODE=1
+      - UV_LINK_MODE=copy
+      - UV_CACHE_DIR=/tmp/.uv-cache
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "huey_consumer"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+  mcp:
+    platform: linux/x86_64
+    build:
+      context: .
+      dockerfile: mcp.dockerfile
+      <<: *build-config
+    restart: always
+    networks:
+      - dokploy-network
+    volumes:
+      - ./mcp_server:/app/mcp_server
+      - ./common:/app/common
+    ports:
+      - "8002:8002"
+    env_file:
+      - .env
+    environment:
+      # API backend URL (internal Docker network reference)
+      - API_BASE_URL=http://api:8000
+      - MCP_PORT=8002
+      - MCP_HOST=0.0.0.0
+      # uv optimization environment variables
+      - UV_COMPILE_BYTECODE=1
+      - UV_LINK_MODE=copy
+      - UV_CACHE_DIR=/tmp/.uv-cache
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
   db:
     platform: linux/x86_64
-    image: bitnami/mongodb:8.0.4
+    image: bitnamilegacy/mongodb:8.0.4
     restart: always
     networks:
       - dokploy-network
@@ -69,6 +155,12 @@ services:
       - MONGODB_USERNAME=root
       - MONGODB_PASSWORD=root
       - MONGODB_ROOT_PASSWORD=root
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
   cache:
     platform: linux/x86_64
     image: redis/redis-stack:7.4.0-v3
@@ -78,22 +170,12 @@ services:
     ports:
       - "6379:6379"
       - "8001:8001"
-  influx:
-    platform: linux/x86_64
-    image: quay.io/influxdb/influxdb3-core:latest
-    user: 1500:1500
-    restart: always
-    networks:
-      - dokploy-network
-    volumes:
-      - influx_data:/home/influxdb3/.influxdb3
-    command:
-      - serve
-      - --node-id=my_host
-      - --object-store=file
-      - --data-dir=/home/influxdb3/.influxdb3
-    ports:
-      - "8181:8181"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
   meilisearch:
     image: getmeili/meilisearch:v1.12.8
     restart: always
@@ -105,11 +187,16 @@ services:
       - ./data/meili:/meili_data
     environment:
       - MEILI_MASTER_KEY=${MEILI_MASTER_KEY}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7700/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
 volumes:
   cards_data:
-  influx_data:
-
+  huey_data:
 
 networks:
   dokploy-network:

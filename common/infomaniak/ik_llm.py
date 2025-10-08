@@ -1,7 +1,7 @@
 import json
+import logging
 import os
 
-import streamlit as st
 from langchain_core.messages import BaseMessage, convert_to_openai_messages
 from langchain_openai import ChatOpenAI
 from requests import post
@@ -39,7 +39,7 @@ def manual_chat_call(messages: list[BaseMessage], model=MODEL, token=TOKEN):
         try:
             json_res = json.loads(res[6:])
         except json.JSONDecodeError:
-            st.warning(f"Failed to decode JSON: {res}")
+            logging.error(f"Failed to decode JSON: {res}")
             continue
         value = json_res["choices"][0]["delta"]["content"]
 
