@@ -34,6 +34,9 @@ dev-app:
 dev-huey:
     uv run huey_consumer.py tasks.tasks.huey
 
+dev-mcp:
+    API_BASE_URL=http://localhost:8000 uv run python -m mcp_server.server
+
 # Combined development workflows
 dev: install-dev
     @echo "Starting development environment..."
@@ -52,6 +55,9 @@ docker-up-api:
 
 docker-up-app:
     docker-compose up app
+
+docker-up-mcp:
+    docker-compose up mcp
 
 docker-down:
     docker-compose down
@@ -152,6 +158,7 @@ info:
     @echo "Available services:"
     @echo "  - API (FastAPI): http://localhost:8000"
     @echo "  - App (Streamlit): http://localhost:8501"
+    @echo "  - MCP Server: http://localhost:8002"
     @echo "  - MongoDB: mongodb://root:root@localhost:27017/mtg"
     @echo "  - Redis: redis://localhost:6379"
     @echo "  - Meilisearch: http://localhost:7700"
@@ -163,6 +170,7 @@ health:
     @echo "Checking service health..."
     @curl -s http://localhost:8000/ping && echo "✅ API is healthy" || echo "❌ API is down"
     @curl -s http://localhost:8501/_stcore/health && echo "✅ App is healthy" || echo "❌ App is down"
+    @curl -s http://localhost:8002/health && echo "✅ MCP is healthy" || echo "❌ MCP is down"
     @curl -s http://localhost:7700/health && echo "✅ Meilisearch is healthy" || echo "❌ Meilisearch is down"
 
 # Export requirements (for compatibility)

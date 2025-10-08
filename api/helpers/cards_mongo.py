@@ -30,7 +30,7 @@ CARD_PROJECTION = {
     # "highres_image": 1,
     # "illustration_id": 1,
     # "image_status": 1,
-    # "image_uris": 1,
+    "image_uris": 1,
     # "oversized": 1,
     # "prices": 1,
     # "printed_name": 1,
