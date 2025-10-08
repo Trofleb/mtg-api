@@ -1,9 +1,10 @@
 # BuildKit cache configuration for faster builds
+# Note: cache_to requires docker-buildx driver or containerd image store
+# For deployment, you can remove cache_to or create a buildx builder:
+# docker buildx create --name mybuilder --driver docker-container --use
 x-build-config: &build-config
   cache_from:
     - type=local,src=/tmp/.buildx-cache
-  cache_to:
-    - type=local,dest=/tmp/.buildx-cache-new,mode=max
 
 services:
   api:
