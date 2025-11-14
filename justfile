@@ -126,6 +126,11 @@ db-connect:
     @echo "Connecting to MongoDB at localhost:27017 (root/root)"
     mongosh mongodb://root:root@localhost:27017/mtg
 
+db-tunnel:
+    @echo "Creating SSH tunnel to VPS MongoDB (localhost:27017 -> mtg-api-vps:27017)"
+    @echo "Press Ctrl+C to close the tunnel"
+    ssh -L 27017:localhost:27017 mtg-api-vps -N
+
 # Clean build artifacts
 clean:
     rm -rf dist/ build/ *.egg-info

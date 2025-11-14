@@ -46,6 +46,12 @@ class OracleCard:
 
 class CardFilter(BaseModel):
     sets: Optional[list[str]] = None
+    colors: Optional[list[str]] = None  # WUBRG filter
+    color_operator: Optional[str] = "or"  # "or", "and", "exactly"
+    cmc_min: Optional[int] = None
+    cmc_max: Optional[int] = None
+    types: Optional[list[str]] = None  # creature, instant, sorcery, etc.
+    rarities: Optional[list[str]] = None  # common, uncommon, rare, mythic
 
 
 @router.get("/cards/{name}")
@@ -96,25 +102,61 @@ def search_card_by_text(
     page_count=10,
     card_filter: Optional[CardFilter] = None,
 ):
+    # Build match conditions
+    match_conditions = {
+        "$text": {
+            "$search": text,
+            "$caseSensitive": False,
+            "$diacriticSensitive": False,
+        },
+        "lang": {"$eq": lang},
+    }
+
+    # Add set filter
+    if card_filter and card_filter.sets:
+        match_conditions["set_name"] = {"$in": card_filter.sets}
+
+    # Add color filter
+    if card_filter and card_filter.colors:
+        if card_filter.color_operator == "exactly":
+            # Exactly these colors (no more, no less)
+            match_conditions["colors"] = {"$size": len(card_filter.colors)}
+            match_conditions["colors"] = {"$all": card_filter.colors}
+        elif card_filter.color_operator == "and":
+            # Contains all these colors (may have more)
+            match_conditions["colors"] = {"$all": card_filter.colors}
+        else:  # "or" - default
+            # Contains any of these colors
+            match_conditions["colors"] = {"$in": card_filter.colors}
+
+    # Add CMC filter
+    if card_filter and (
+        card_filter.cmc_min is not None or card_filter.cmc_max is not None
+    ):
+        cmc_filter = {}
+        if card_filter.cmc_min is not None:
+            cmc_filter["$gte"] = card_filter.cmc_min
+        if card_filter.cmc_max is not None:
+            cmc_filter["$lte"] = card_filter.cmc_max
+        match_conditions["cmc"] = cmc_filter
+
+    # Add type filter (checks if type_line contains any of the specified types)
+    if card_filter and card_filter.types:
+        # Case-insensitive regex for type matching
+        type_patterns = [
+            {"type_line": {"$regex": t, "$options": "i"}} for t in card_filter.types
+        ]
+        match_conditions["$or"] = type_patterns
+
+    # Add rarity filter
+    if card_filter and card_filter.rarities:
+        match_conditions["rarity"] = {"$in": card_filter.rarities}
+
     results = [
         card
         for card in collection.aggregate(
             [
-                {
-                    "$match": {
-                        "$text": {
-                            "$search": text,
-                            "$caseSensitive": False,
-                            "$diacriticSensitive": False,
-                        },
-                        "lang": {"$eq": lang},
-                        "set_name": (
-                            {"$in": card_filter.sets}
-                            if card_filter and card_filter.sets
-                            else {"$exists": True}
-                        ),
-                    }
-                },
+                {"$match": match_conditions},
                 {"$project": {"score": 1, **CARD_PROJECTION}},
                 {"$group": {"score": {"$max": "$score"}, **AGGREGATE_CARD}},
                 {"$sort": {"score": -1}},
