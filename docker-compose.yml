@@ -67,6 +67,28 @@ services:
       timeout: 10s
       retries: 3
       start_period: 45s
+  web-app:
+    platform: linux/x86_64
+    build:
+      context: ./web-app
+      dockerfile: Dockerfile
+    restart: always
+    networks:
+      - dokploy-network
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://api:8000
+      - NODE_ENV=production
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
   huey:
     platform: linux/x86_64
     build:
