@@ -76,8 +76,7 @@ services:
     volumes:
       # Mount source code for hot reload
       - ./web-app:/app
-      # Preserve node_modules and Next.js cache in container
-      - web-app-node-modules:/app/node_modules
+      # Preserve Next.js cache in container for faster rebuilds
       - web-app-next:/app/.next
     environment:
       # Point to VPS API via tunnel service
@@ -103,5 +102,4 @@ networks:
     driver: bridge
 
 volumes:
-  web-app-node-modules:
   web-app-next:

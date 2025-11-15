@@ -119,6 +119,7 @@ This is a multi-service application with separate containers for:
 - **Framework**: Next.js 16 with App Router, TypeScript (strict mode), Tailwind CSS 4
 - **UI Components**: shadcn/ui for modern, accessible components
 - **Code Quality**: Biome for linting and formatting
+- **Testing**: Vitest with React Testing Library and jsdom
 - **Package Manager**: pnpm for dependency management
 - **Features**: Modern MTG card search with advanced filtering
 - **Structure**:
@@ -126,12 +127,23 @@ This is a multi-service application with separate containers for:
   - `components/`: React components (card-search, card-grid, card-details-dialog)
   - `lib/`: Utility functions and API client
   - `components/ui/`: shadcn/ui components
+  - `test/`: Testing utilities and custom render functions
 - **Development**:
   - `pnpm dev` - Start development server on port 3000
   - `pnpm build` - Build for production
   - `pnpm lint` - Run Biome linter
   - `pnpm format` - Format code with Biome
   - `pnpm typecheck` - Run TypeScript type checking
+  - `pnpm test` - Run Vitest in watch mode
+  - `pnpm test:run` - Run tests once and exit
+  - `pnpm test:ui` - Run tests with Vitest UI
+  - `pnpm test:coverage` - Run tests with coverage report
+- **Testing Setup**:
+  - **Configuration**: `vitest.config.ts` with React plugin and path alias support
+  - **Setup File**: `vitest.setup.ts` with Next.js mocks (navigation, Image, Link) and ResizeObserver
+  - **Test Utils**: `test/test-utils.tsx` with custom render function including userEvent
+  - **Coverage**: Configured with v8 provider, excludes config files and node_modules
+  - **Test Files**: `*.test.ts` and `*.test.tsx` files located next to source files
 - **Docker**: Standalone Dockerfile with multi-stage builds for production
 
 ### Background Tasks (`tasks/`)
