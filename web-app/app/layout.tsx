@@ -10,6 +10,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "MTG Card Search",
   description: "Search for Magic: The Gathering cards",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
