@@ -66,7 +66,7 @@ docker-up-web:
 dev-web-vps:
     @echo "🚀 Starting web-app in VPS development mode..."
     @echo "📡 This will create an SSH tunnel to VPS and run web-app with hot reload"
-    @echo "🔗 Web app will be available at: http://localhost:3000"
+    @echo "🔗 Web app will be available at: http://localhost:8080"
     @echo "🔗 VPS API will be tunneled at: http://localhost:8000"
     @echo ""
     @echo "⚙️  Using docker-compose.vps-dev.yml configuration"

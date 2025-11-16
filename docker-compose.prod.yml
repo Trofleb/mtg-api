@@ -1,16 +1,30 @@
+# Docker Compose configuration for production deployment
+# This file uses pre-built images from GitHub Container Registry
+#
+# Usage:
+#   docker-compose -f docker-compose.prod.yml up -d
+#   OR
+#   docker-compose -f docker-compose.prod.yml pull && docker-compose -f docker-compose.prod.yml up -d
+#
+# Features:
+#   - Uses latest container images from GHCR
+#   - No local volumes for code (images are self-contained)
+#   - Optimized for production deployment
+#   - All services configured with health checks and auto-restart
+#
+# Before deploying:
+#   1. Ensure .env file is properly configured
+#   2. Create dokploy-network: docker network create dokploy-network
+#   3. Pull latest images: docker-compose -f docker-compose.prod.yml pull
+#   4. Start services: docker-compose -f docker-compose.prod.yml up -d
+
 services:
   api:
     platform: linux/x86_64
     image: ghcr.io/trofleb/mtg-api/api:latest
-    build:
-      context: .
-      dockerfile: api.dockerfile
     restart: always
     networks:
       - dokploy-network
-    volumes:
-      - ./api:/code/api
-      - ./common:/code/common
     ports:
       - "8000:8000"
     env_file:
@@ -35,22 +49,13 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
+
   app:
     platform: linux/x86_64
     image: ghcr.io/trofleb/mtg-api/app:latest
-    build:
-      context: .
-      dockerfile: app.dockerfile
     restart: always
     networks:
       - dokploy-network
-    volumes:
-      - ./app/app.py:/code/app.py
-      - ./app/pages:/code/pages
-      - ./app/dialog:/code/dialog
-      - ./app/utils:/code/utils
-      - ./common:/code/common
-      - ./data:/data
     env_file:
       - .env
     environment:
@@ -69,12 +74,10 @@ services:
       timeout: 10s
       retries: 3
       start_period: 45s
+
   web-app:
     platform: linux/x86_64
     image: ghcr.io/trofleb/mtg-api/web-app:latest
-    build:
-      context: ./web-app
-      dockerfile: Dockerfile
     restart: always
     networks:
       - dokploy-network
@@ -92,18 +95,14 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
+
   huey:
     platform: linux/x86_64
     image: ghcr.io/trofleb/mtg-api/huey:latest
-    build:
-      context: .
-      dockerfile: huey.dockerfile
     restart: always
     networks:
       - dokploy-network
     volumes:
-      - ./tasks:/app/tasks
-      - ./common:/app/common
       - huey_data:/app/db
     env_file:
       - .env
@@ -123,18 +122,13 @@ services:
       timeout: 5s
       retries: 3
       start_period: 60s
+
   mcp:
     platform: linux/x86_64
     image: ghcr.io/trofleb/mtg-api/mcp:latest
-    build:
-      context: .
-      dockerfile: mcp.dockerfile
     restart: always
     networks:
       - dokploy-network
-    volumes:
-      - ./mcp_server:/app/mcp_server
-      - ./common:/app/common
     ports:
       - "8002:8002"
     env_file:
@@ -157,6 +151,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 5s
+
   db:
     platform: linux/x86_64
     image: bitnamilegacy/mongodb:8.0.4
@@ -177,6 +172,7 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
+
   cache:
     platform: linux/x86_64
     image: redis/redis-stack:7.4.0-v3
@@ -192,6 +188,7 @@ services:
       timeout: 3s
       retries: 3
       start_period: 10s
+
   meilisearch:
     image: getmeili/meilisearch:v1.12.8
     restart: always
@@ -200,7 +197,7 @@ services:
     ports:
       - "7700:7700"
     volumes:
-      - ./data/meili:/meili_data
+      - meili_data:/meili_data
     environment:
       - MEILI_MASTER_KEY=${MEILI_MASTER_KEY}
     healthcheck:
@@ -213,6 +210,7 @@ services:
 volumes:
   cards_data:
   huey_data:
+  meili_data:
 
 networks:
   dokploy-network:

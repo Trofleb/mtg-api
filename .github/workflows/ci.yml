@@ -7,7 +7,44 @@ on:
     branches: [main, develop]
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    # Required permissions for paths-filter
+    permissions:
+      pull-requests: read
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      web-app: ${{ steps.filter.outputs.web-app }}
+      scripts: ${{ steps.filter.outputs.scripts }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check for file changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'api/**'
+              - 'tasks/**'
+              - 'common/**'
+              - 'tests/**'
+              - 'pyproject.toml'
+              - 'uv.lock'
+              - '.github/workflows/ci.yml'
+            web-app:
+              - 'web-app/**'
+              - '.github/workflows/ci.yml'
+            scripts:
+              - 'scripts/**'
+              - 'common/**'
+              - 'pyproject.toml'
+              - 'uv.lock'
+              - '.github/workflows/ci.yml'
+
   test:
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -41,6 +78,8 @@ jobs:
           fail_ci_if_error: false
 
   test-web-app:
+    needs: changes
+    if: ${{ needs.changes.outputs.web-app == 'true' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -87,6 +126,8 @@ jobs:
         run: pnpm run test:run
 
   scripts-test:
+    needs: changes
+    if: ${{ needs.changes.outputs.scripts == 'true' }}
     runs-on: ubuntu-latest
 
     steps:
