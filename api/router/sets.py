@@ -1,23 +1,9 @@
 from fastapi.routing import APIRouter
 from pydantic import BaseModel
-from pymongo import MongoClient
 
-from common.constants import (
-    DATABASE,
-    DATABASE_HOST,
-    DATABASE_PASSWORD,
-    DATABASE_PORT,
-    DATABASE_USER,
-)
+from api.helpers.database import CardsCollection
 
 router = APIRouter()
-
-client = MongoClient(
-    f"mongodb://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}"
-)
-
-db = client[DATABASE]
-collection = db["cards"]
 
 
 class Sets(BaseModel):
@@ -25,7 +11,15 @@ class Sets(BaseModel):
 
 
 @router.get("/sets")
-def get_sets() -> Sets:
+def get_sets(collection: CardsCollection) -> Sets:
+    """Get all unique MTG set names.
+
+    Args:
+        collection: MongoDB cards collection (injected dependency)
+
+    Returns:
+        Sets object containing list of unique set names.
+    """
     sets = [
         card_set["_id"]
         for card_set in collection.aggregate(

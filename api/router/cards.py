@@ -3,27 +3,13 @@ from typing import Optional
 from fastapi import HTTPException
 from fastapi.routing import APIRouter
 from pydantic import AnyUrl, BaseModel
-from pymongo import MongoClient
 from unidecode import unidecode
 
 from api.helpers.cards_mongo import AGGREGATE_CARD, CARD_PROJECTION
-from common.constants import (
-    DATABASE,
-    DATABASE_HOST,
-    DATABASE_PASSWORD,
-    DATABASE_PORT,
-    DATABASE_USER,
-)
+from api.helpers.database import CardsCollection
 from common.scyfall_models import PrintedCard
 
 router = APIRouter()
-
-client = MongoClient(
-    f"mongodb://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}"
-)
-
-db = client[DATABASE]
-collection = db["cards"]
 
 
 class Card(PrintedCard):
@@ -57,6 +43,7 @@ class CardFilter(BaseModel):
 @router.get("/cards/{name}")
 def search_card_by_name(
     name: str,
+    collection: CardsCollection,
     lang: str = "en",
     set: Optional[str] = None,
 ):
@@ -97,6 +84,7 @@ def search_card_by_name(
 @router.get("/cards/search/{text}")
 def search_card_by_text(
     text: str,
+    collection: CardsCollection,
     lang: str = "en",
     cursor: Optional[str] = None,
     page_count=10,
@@ -194,11 +182,12 @@ def search_card_by_text(
 
 
 @router.get("/cards/id/{scryfall_id}")
-def get_card_by_scryfall_id(scryfall_id: str):
+def get_card_by_scryfall_id(scryfall_id: str, collection: CardsCollection):
     """Get a specific MTG card printing by Scryfall ID.
 
     Args:
         scryfall_id: Unique Scryfall UUID for a specific card printing
+        collection: MongoDB cards collection (injected dependency)
 
     Returns:
         Card data including image_uris and all metadata
@@ -219,11 +208,12 @@ def get_card_by_scryfall_id(scryfall_id: str):
 
 
 @router.get("/cards/oracle/{oracle_id}")
-def get_cards_by_oracle_id(oracle_id: str):
+def get_cards_by_oracle_id(oracle_id: str, collection: CardsCollection):
     """Get all printings of a card by Oracle ID.
 
     Args:
         oracle_id: Oracle UUID representing the card concept (non-unique)
+        collection: MongoDB cards collection (injected dependency)
 
     Returns:
         List of all card printings sharing this oracle_id
