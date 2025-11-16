@@ -1,52 +1,35 @@
 # End-to-End Tests
 
-This directory contains Playwright end-to-end tests for the MTG Card Search web application.
+Playwright e2e tests for the MTG Card Search web application.
 
 ## Quick Start
 
-### Option 1: VPS API with SSH Tunnel (Recommended)
+### Recommended: VPS API (One Command)
 
-**Automatic setup with Just:**
 ```bash
-# From project root - automatically starts tunnel, runs tests, and cleans up
+# From project root - automatic tunnel setup and cleanup
 just test-e2e-vps
 
-# Or for interactive UI mode
+# Interactive UI mode
 just test-e2e-ui-vps
 ```
 
-**Manual setup:**
-```bash
-# 1. Start SSH tunnel to VPS API (from project root)
-docker-compose -f docker-compose.vps-dev.yml up ssh-tunnel -d
+This automatically:
+- Starts SSH tunnel to VPS API
+- Runs all Playwright tests
+- Cleans up tunnel when done
 
-# 2. Verify tunnel is working
-curl http://localhost:8000/ping  # Should return: pong
-
-# 3. Run tests (in web-app directory)
-cd web-app
-pnpm run test:e2e
-
-# 4. Clean up tunnel
-docker-compose -f docker-compose.vps-dev.yml down
-```
-
-### Option 2: Local API with Docker Compose
+### Local API
 
 ```bash
-# 1. Start the API and dependencies (from project root)
+# Terminal 1: Start API
 docker-compose up api
-# or: just docker-up-api
 
-# 2. Wait for services to be healthy (~30-45 seconds)
-# Watch for: ✅ API is healthy
-
-# 3. Run all e2e tests (in another terminal)
-cd web-app
-pnpm run test:e2e
+# Terminal 2: Run tests
+just test-e2e
 ```
 
-### Option 3: Homepage Tests Only (No API Required)
+### UI Tests Only (No API Required)
 
 ```bash
 # From web-app directory
@@ -55,386 +38,131 @@ pnpm run test:e2e e2e/homepage.spec.ts
 
 ## Test Files
 
-### `homepage.spec.ts`
-Tests the main homepage UI elements and interactions without requiring the API:
-- Page title and heading verification
-- Scryfall attribution link
-- Search input functionality
-- Filter panel toggle
-- All filter options display (colors, types, rarities, CMC slider)
-- Form controls accessibility
-- Button states (enabled/disabled)
+- **`homepage.spec.ts`** - UI-only tests (no API required) ✅ 6/6 passing
+- **`card-search.spec.ts`** - Card search with API integration
+- **`api.spec.ts`** - Direct API endpoint tests
 
-**Status**: ✅ All tests passing (6/6)
-
-### `card-search.spec.ts`
-Tests the card search functionality that requires a running API:
-- Basic card search
-- Search on Enter key press
-- Filter by card type, color, and rarity
-- Load more pagination
-- Card details dialog
-- API error handling
-- Loading states
-
-**Status**: ⚠️ Requires API to be running at `http://localhost:8000`
-
-### `api.spec.ts`
-Direct API endpoint tests using Playwright's request fixture:
-- `/ping` health check endpoint
-- Card search endpoints
-- Card retrieval by name and ID
-- Pagination with cursor
-- Error handling (404s, validation errors)
-- Content-Type headers
-
-**Status**: ⚠️ Requires API to be running at `http://localhost:8000`
-
-## Running Tests
-
-### Recommended: VPS API Tests (Automatic)
+## Common Commands
 
 ```bash
-# From project root - handles tunnel setup and cleanup automatically
-just test-e2e-vps
+# VPS API tests (recommended)
+just test-e2e-vps              # Run all tests
+just test-e2e-vps e2e/api.spec.ts  # Run specific file
+just test-e2e-ui-vps           # Interactive UI mode
 
-# Run specific test file
-just test-e2e-vps e2e/homepage.spec.ts
+# Local API tests
+just test-e2e                  # All tests
+just test-e2e-ui               # Interactive mode
+just test-e2e-debug            # Debug with inspector
 
-# Interactive UI mode with VPS
-just test-e2e-ui-vps
-```
-
-### Manual VPS Tunnel Setup
-
-```bash
-# Terminal 1: Start tunnel
-just test-e2e-vps-tunnel
-
-# Terminal 2: Run tests
-cd web-app
-pnpm run test:e2e
-
-# When done, stop tunnel
-just test-e2e-vps-tunnel-stop
-```
-
-### Local API Tests (Docker Compose)
-
-```bash
-# Terminal 1: Start services
-docker-compose up api
-# or: just docker-up-api
-
-# Terminal 2: Run tests
-just test-e2e
-# or: cd web-app && pnpm run test:e2e
-```
-
-### Homepage Tests Only (No API Required)
-```bash
 # From web-app directory
-pnpm run test:e2e e2e/homepage.spec.ts
+pnpm run test:e2e              # All tests
+pnpm run test:e2e:ui           # Interactive mode
+pnpm run test:e2e:debug        # Debug mode
+pnpm run test:e2e e2e/homepage.spec.ts  # Specific file
 ```
 
-### Specific Test File
-```bash
-pnpm run test:e2e e2e/homepage.spec.ts
-```
+## How It Works
 
-### Interactive UI Mode
-```bash
-# From project root
-just test-e2e-ui
+### VPS Tunnel Setup
 
-# Or from web-app directory
-pnpm run test:e2e:ui
-```
+The `just test-e2e-vps` command:
 
-### Debug Mode
-```bash
-# From project root
-just test-e2e-debug
+1. Starts SSH tunnel container via `docker-compose.vps-dev.yml`
+2. Tunnels VPS API to `localhost:8000`
+3. Waits for API to respond
+4. Runs Playwright tests with `--reporter=list` (non-blocking)
+5. Automatically tears down tunnel
 
-# Or from web-app directory
-pnpm run test:e2e:debug
-```
+### Local API Setup
 
-### With Visible Browser (Headed)
-```bash
-# From project root
-just test-e2e-headed
-
-# Or from web-app directory
-pnpm run test:e2e:headed
-```
-
-### View Test Report
-```bash
-# From project root
-just test-e2e-report
-
-# Or from web-app directory
-pnpm run test:e2e:report
-```
-
-## Prerequisites
-
-### For Homepage Tests Only
-- No external dependencies required
-- Playwright automatically starts the Next.js dev server
-- Run: `pnpm run test:e2e e2e/homepage.spec.ts`
-
-### For Full Test Suite
-
-#### Option 1: VPS API (Recommended - Easiest)
-
-Uses SSH tunnel to connect to VPS API:
+Requirements:
+- Docker Compose
+- API running on port 8000
 
 ```bash
-# Automatic - one command does everything
-just test-e2e-vps
-```
-
-This command:
-- Starts SSH tunnel to VPS API
-- Runs Playwright tests
-- Cleans up tunnel automatically
-
-**Requirements:**
-- VPS connection configured in `.env` (VPS_HOST, VPS_USER, VPS_API_PORT)
-- 1Password SSH agent with VPS key
-- VPS API running and accessible
-
-#### Option 2: Local API (Full Docker Stack)
-
-**Using Docker Compose:**
-
-```bash
-# From project root - Start API and all dependencies
+# Start full stack
 docker-compose up api
 
-# This starts:
-# - API (FastAPI) on port 8000
-# - MongoDB on port 27017
-# - Redis on port 6379
-# - Meilisearch on port 7700
+# Verify API is ready
+curl http://localhost:8000/ping  # Should return: pong
 ```
 
-**Or use Just commands:**
-```bash
-# From project root
-just docker-up-api
+## Debugging
 
-# Check API health
-just health
-# Should show: ✅ API is healthy
-```
+### View Test Artifacts
 
-**Verify API is ready:**
-```bash
-curl http://localhost:8000/ping
-# Should return: pong
-```
+Failed tests generate:
+- Screenshots in `test-results/`
+- Videos in `test-results/`
+- Traces for retry attempts
 
-## Configuration
+### Trace Viewer
 
-Test configuration is in `playwright.config.ts`:
-- **Base URL**: `http://localhost:3000`
-- **Browser**: Chromium (Firefox and WebKit available but commented out)
-- **Timeout**: 30 seconds per test
-- **Retries**: 2 retries in CI, 0 locally
-- **Workers**: 1 in CI, unlimited locally
-- **Reporters**: HTML, JSON, List
-- **Artifacts**: Screenshots/videos on failure only, traces on first retry
-
-## Web Server
-
-Playwright automatically manages the Next.js development server:
-- **Development**: `pnpm run dev`
-- **CI**: `pnpm run build && pnpm run start`
-- **Timeout**: 120 seconds for server startup
-- **Reuse**: Existing server reused in local development
-
-## Debugging Failed Tests
-
-When a test fails, Playwright captures:
-1. **Screenshot** - Visual state at failure
-2. **Video** - Full test execution recording (on failure)
-3. **Trace** - Detailed execution trace (on retry)
-
-Access these in:
-- `test-results/` directory
-- HTML report: `playwright-report/index.html`
-
-### View Trace Files
 ```bash
 npx playwright show-trace path/to/trace.zip
 ```
 
-## Writing New Tests
+### Common Issues
+
+**Tunnel fails to start:**
+```bash
+# Check VPS connection in .env (VPS_HOST, VPS_USER, VPS_API_PORT)
+# Verify 1Password SSH agent is running
+```
+
+**Tests timeout:**
+```bash
+# Verify API is accessible
+curl http://localhost:8000/ping
+```
+
+**"Apply Filters" button ambiguity:**
+- Use more specific selectors in tests
+- This is a known issue being addressed
+
+## Configuration
+
+Playwright config (`playwright.config.ts`):
+- Base URL: `http://localhost:3000`
+- Browser: Chromium
+- Timeout: 30s per test
+- Retries: 2 in CI, 0 locally
+- Reporters: List (non-blocking), JSON
+
+Web server auto-start:
+- Development: `pnpm run dev`
+- CI: `pnpm run build && pnpm run start`
+- Timeout: 120s
+
+## Writing Tests
 
 ### Best Practices
 
-1. **Use Semantic Selectors**
-   ```typescript
-   // Good
-   page.getByRole('button', { name: 'Search' })
-   page.getByLabel('Email')
-
-   // Avoid
-   page.locator('.btn-primary')
-   ```
-
-2. **Wait for Elements**
-   ```typescript
-   await expect(page.getByText('Results')).toBeVisible({ timeout: 10000 });
-   ```
-
-3. **Use data-testid for Complex Elements**
-   ```typescript
-   <div data-testid="card-item">...</div>
-
-   page.locator('[data-testid="card-item"]')
-   ```
-
-4. **Group Related Tests**
-   ```typescript
-   test.describe('Feature Name', () => {
-     test.beforeEach(async ({ page }) => {
-       await page.goto('/');
-     });
-
-     test('specific behavior', async ({ page }) => {
-       // test code
-     });
-   });
-   ```
-
-5. **Handle API Dependencies**
-   ```typescript
-   // Mock API responses when testing UI behavior
-   await page.route('**/api/cards/search*', route =>
-     route.fulfill({ json: mockData })
-   );
-   ```
-
-## CI/CD Integration
-
-Add to `.github/workflows/playwright.yml`:
-```yaml
-name: Playwright Tests
-on: [push, pull_request]
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
-        with:
-          node-version: lts/*
-      - name: Install dependencies
-        run: cd web-app && pnpm install
-      - name: Install Playwright Browsers
-        run: cd web-app && npx playwright install --with-deps
-      - name: Run Playwright tests
-        run: cd web-app && pnpm run test:e2e
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: playwright-report
-          path: web-app/playwright-report/
-```
-
-## Troubleshooting
-
-### Tests Timing Out
-- Increase timeout in test or config
-- Check if API is running for API-dependent tests
-- Verify network connectivity
-
-### Strict Mode Violations
-Use `exact: true` for buttons with similar names:
 ```typescript
-page.getByRole('button', { name: 'Filters', exact: true })
+// Use semantic selectors
+page.getByRole('button', { name: 'Search', exact: true })
+page.getByLabel('Email')
+
+// Wait explicitly
+await expect(page.getByText('Results')).toBeVisible({ timeout: 10000 });
+
+// Use data-testid for complex elements
+page.locator('[data-testid="card-item"]')
 ```
 
-### Flaky Tests
-- Add explicit waits: `await page.waitForLoadState('networkidle')`
-- Use `toBeVisible()` instead of truthy checks
-- Ensure unique selectors with `exact: true`
+### Test Structure
 
-### API Not Found Errors
-Start the API before running API-dependent tests:
-```bash
-# From project root
-docker-compose up api
+```typescript
+test.describe('Feature Name', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+  });
 
-# Verify API is responding
-curl http://localhost:8000/ping
-# Should return: pong
-
-# Check service health
-just health
-```
-
-### Port Already in Use
-If port 8000 is already taken:
-```bash
-# Stop existing containers
-docker-compose down
-
-# Restart API
-docker-compose up api
-```
-
-## Development Workflow
-
-### Complete Testing Cycle
-
-```bash
-# Terminal 1: Start backend services
-cd /path/to/mtg-api
-docker-compose up api
-# Wait for: "API is running on http://0.0.0.0:8000"
-
-# Terminal 2: Develop and test
-cd /path/to/mtg-api/web-app
-
-# Run all tests
-pnpm run test:e2e
-
-# Or use interactive UI mode for development
-pnpm run test:e2e:ui
-
-# Or debug specific test
-pnpm run test:e2e:debug e2e/homepage.spec.ts
-```
-
-### Using Just Commands
-
-```bash
-# Terminal 1: Start services
-just docker-up-api
-
-# Terminal 2: Run tests
-just test-e2e
-
-# Or interactive mode
-just test-e2e-ui
-
-# Check service health anytime
-just health
-```
-
-### CI/CD Workflow
-
-```bash
-# This is what CI does automatically:
-docker-compose up api &          # Start API in background
-pnpm run build                   # Build Next.js app
-pnpm run test:e2e                # Run all tests
-docker-compose down              # Clean up
+  test('specific behavior', async ({ page }) => {
+    // test code
+  });
+});
 ```
 
 ## Resources
@@ -442,4 +170,3 @@ docker-compose down              # Clean up
 - [Playwright Documentation](https://playwright.dev/)
 - [Playwright Best Practices](https://playwright.dev/docs/best-practices)
 - [Next.js Testing Guide](https://nextjs.org/docs/testing)
-- [Docker Compose Documentation](https://docs.docker.com/compose/)

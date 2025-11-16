@@ -44,15 +44,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `just test-file <file>` - Run tests for specific file
 
 **E2E Testing (Playwright):**
-- `just test-e2e-vps` - Run e2e tests with VPS API (recommended - auto tunnel setup/teardown)
-- `just test-e2e-ui-vps` - Interactive UI mode with VPS API tunnel
-- `just test-e2e-vps-tunnel` - Start SSH tunnel to VPS API manually
-- `just test-e2e-vps-tunnel-stop` - Stop VPS API tunnel
+- `just test-e2e-vps` - Run e2e tests with VPS API (recommended - automatic tunnel)
+- `just test-e2e-ui-vps` - Interactive UI mode with VPS API
 - `just test-e2e` - Run e2e tests (requires API at localhost:8000)
-- `just test-e2e-ui` - Interactive UI mode
-- `just test-e2e-headed` - Run with visible browser
-- `just test-e2e-debug` - Debug mode with inspector
-- `just test-e2e-report` - Show HTML test report
+- `just test-e2e-ui` - Interactive UI mode (requires local API)
+- `just test-e2e-debug` - Debug mode with Playwright inspector
 
 **Code Quality:**
 - `just lint` - Run ruff linting
@@ -173,12 +169,12 @@ This is a multi-service application with separate containers for:
   - **Web Server**: Automatically starts Next.js dev/production server before tests
   - **Browsers**: Chromium (Firefox and WebKit available but commented out)
   - **Debugging**: Trace on first retry, screenshots/videos on failure only
-  - **VPS Integration**: SSH tunnel support for testing against VPS API via `docker-compose.vps-dev.yml`
+  - **VPS Integration**: Automatic SSH tunnel setup for testing against VPS API
   - **Running Tests**:
-    - **Recommended**: `just test-e2e-vps` - Automatic VPS tunnel setup and cleanup
-    - **Interactive**: `just test-e2e-ui-vps` - UI mode with VPS API
-    - **Manual**: `just test-e2e` (requires API at localhost:8000)
-    - **Homepage only**: `pnpm run test:e2e e2e/homepage.spec.ts` (no API needed)
+    - **Recommended**: `just test-e2e-vps` - Automatic VPS tunnel with cleanup
+    - **Interactive**: `just test-e2e-ui-vps` - UI mode with VPS API tunnel
+    - **Local API**: `just test-e2e` (start API first: `docker-compose up api`)
+    - **UI only**: `pnpm run test:e2e e2e/homepage.spec.ts` (no API needed)
 - **Docker**: Standalone Dockerfile with multi-stage builds for production
 
 ### Background Tasks (`tasks/`)

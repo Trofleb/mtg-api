@@ -87,7 +87,7 @@ describe("CardSearch", () => {
 
     await waitFor(() => {
       expect(mockSearchCards).toHaveBeenCalledWith("Black Lotus", null, {
-        selected_sets: undefined,
+        sets: undefined,
         colors: undefined,
         color_operator: undefined,
         cmc_min: undefined,

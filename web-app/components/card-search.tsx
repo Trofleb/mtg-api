@@ -69,7 +69,7 @@ export function CardSearch() {
       setLoading(true);
       try {
         const filters: CardFilter = {
-          selected_sets: selectedSets.length > 0 ? selectedSets : undefined,
+          sets: selectedSets.length > 0 ? selectedSets : undefined,
           colors: selectedColors.length > 0 ? selectedColors : undefined,
           color_operator: selectedColors.length > 0 ? colorOperator : undefined,
           cmc_min: cmcRange[0] > 0 ? cmcRange[0] : undefined,
