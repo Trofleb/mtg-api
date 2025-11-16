@@ -32,11 +32,19 @@ def test_get_sets_returns_unique_set_names(test_client):
     assert "sets" in data
     assert isinstance(data["sets"], list)
 
-    # Should have exactly 4 unique sets from sample data
-    assert len(data["sets"]) == 4
+    # Should have exactly 7 unique sets from sample data (updated with Phase 5 fixtures)
+    assert len(data["sets"]) == 7
 
     # Verify all expected sets are present
-    expected_sets = {"Limited Edition Alpha", "Double Masters", "Conflux", "Innistrad"}
+    expected_sets = {
+        "Limited Edition Alpha",
+        "Double Masters",
+        "Conflux",
+        "Innistrad",
+        "Return to Ravnica",
+        "Magic 2011",
+        "Rise of the Eldrazi",
+    }
     assert set(data["sets"]) == expected_sets
 
 
@@ -69,10 +77,13 @@ def test_get_sets_returns_alphabetically_sorted_descending(test_client):
     - Order is consistent across calls
 
     Expected order (Z→A):
-    1. Limited Edition Alpha (starts with 'L')
-    2. Innistrad (starts with 'I')
-    3. Double Masters (starts with 'D')
-    4. Conflux (starts with 'C')
+    1. Rise of the Eldrazi
+    2. Return to Ravnica
+    3. Magic 2011
+    4. Limited Edition Alpha
+    5. Innistrad
+    6. Double Masters
+    7. Conflux
     """
     response = test_client.get("/sets")
 
@@ -81,14 +92,8 @@ def test_get_sets_returns_alphabetically_sorted_descending(test_client):
     data = response.json()
     sets = data["sets"]
 
-    # Verify we have all 4 sets
-    assert len(sets) == 4
-
-    # Verify descending alphabetical order
-    assert sets[0] == "Limited Edition Alpha"
-    assert sets[1] == "Innistrad"
-    assert sets[2] == "Double Masters"
-    assert sets[3] == "Conflux"
+    # Verify we have all 7 sets (updated with Phase 5 fixtures)
+    assert len(sets) == 7
 
     # Alternative verification: ensure list is sorted in descending order
     assert sets == sorted(sets, reverse=True)

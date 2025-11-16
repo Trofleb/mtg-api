@@ -1,8 +1,8 @@
-from typing import Optional
+from typing import Annotated, Optional
 
-from fastapi import HTTPException
+from fastapi import HTTPException, Query
 from fastapi.routing import APIRouter
-from pydantic import AnyUrl, BaseModel
+from pydantic import AnyUrl
 from unidecode import unidecode
 
 from api.helpers.cards_mongo import AGGREGATE_CARD, CARD_PROJECTION
@@ -30,14 +30,7 @@ class OracleCard:
     cards: list[Card]
 
 
-class CardFilter(BaseModel):
-    sets: Optional[list[str]] = None
-    colors: Optional[list[str]] = None  # WUBRG filter
-    color_operator: Optional[str] = "or"  # "or", "and", "exactly"
-    cmc_min: Optional[int] = None
-    cmc_max: Optional[int] = None
-    types: Optional[list[str]] = None  # creature, instant, sorcery, etc.
-    rarities: Optional[list[str]] = None  # common, uncommon, rare, mythic
+# Removed CardFilter BaseModel - using individual Annotated parameters instead
 
 
 @router.get("/cards/{name}")
@@ -87,8 +80,14 @@ def search_card_by_text(
     collection: CardsCollection,
     lang: str = "en",
     cursor: Optional[str] = None,
-    page_count=10,
-    card_filter: Optional[CardFilter] = None,
+    page_count: int = 10,
+    sets: Annotated[list[str], Query()] = [],
+    colors: Annotated[list[str], Query()] = [],
+    color_operator: Annotated[str, Query()] = "or",
+    cmc_min: Annotated[Optional[int], Query()] = None,
+    cmc_max: Annotated[Optional[int], Query()] = None,
+    types: Annotated[list[str], Query()] = [],
+    rarities: Annotated[list[str], Query()] = [],
 ):
     # Build match conditions
     match_conditions = {
@@ -101,80 +100,93 @@ def search_card_by_text(
     }
 
     # Add set filter
-    if card_filter and card_filter.sets:
-        match_conditions["set_name"] = {"$in": card_filter.sets}
+    if sets:
+        match_conditions["set_name"] = {"$in": sets}
 
     # Add color filter
-    if card_filter and card_filter.colors:
-        if card_filter.color_operator == "exactly":
+    if colors:
+        if color_operator == "exactly":
             # Exactly these colors (no more, no less)
-            match_conditions["colors"] = {"$size": len(card_filter.colors)}
-            match_conditions["colors"] = {"$all": card_filter.colors}
-        elif card_filter.color_operator == "and":
+            match_conditions["colors"] = {
+                "$all": colors,
+                "$size": len(colors),
+            }
+        elif color_operator == "and":
             # Contains all these colors (may have more)
-            match_conditions["colors"] = {"$all": card_filter.colors}
+            match_conditions["colors"] = {"$all": colors}
         else:  # "or" - default
             # Contains any of these colors
-            match_conditions["colors"] = {"$in": card_filter.colors}
+            match_conditions["colors"] = {"$in": colors}
 
     # Add CMC filter
-    if card_filter and (
-        card_filter.cmc_min is not None or card_filter.cmc_max is not None
-    ):
+    if cmc_min is not None or cmc_max is not None:
         cmc_filter = {}
-        if card_filter.cmc_min is not None:
-            cmc_filter["$gte"] = card_filter.cmc_min
-        if card_filter.cmc_max is not None:
-            cmc_filter["$lte"] = card_filter.cmc_max
+        if cmc_min is not None:
+            cmc_filter["$gte"] = cmc_min
+        if cmc_max is not None:
+            cmc_filter["$lte"] = cmc_max
         match_conditions["cmc"] = cmc_filter
 
     # Add type filter (checks if type_line contains any of the specified types)
-    if card_filter and card_filter.types:
+    if types:
         # Case-insensitive regex for type matching
-        type_patterns = [
-            {"type_line": {"$regex": t, "$options": "i"}} for t in card_filter.types
-        ]
+        type_patterns = [{"type_line": {"$regex": t, "$options": "i"}} for t in types]
         match_conditions["$or"] = type_patterns
 
     # Add rarity filter
-    if card_filter and card_filter.rarities:
-        match_conditions["rarity"] = {"$in": card_filter.rarities}
+    if rarities:
+        match_conditions["rarity"] = {"$in": rarities}
 
-    results = [
-        card
-        for card in collection.aggregate(
-            [
-                {"$match": match_conditions},
-                {"$project": {"score": 1, **CARD_PROJECTION}},
-                {"$group": {"score": {"$max": "$score"}, **AGGREGATE_CARD}},
-                {"$sort": {"score": -1}},
-                (
-                    {
-                        "$match": {
-                            "score": {
-                                "$lt": float(cursor),
-                            }
-                        }
-                    }
-                    if cursor
-                    else {
-                        "$match": {
-                            "_id": {
-                                "$exists": True,
-                            }
-                        }
-                    }
-                ),
-                {
-                    "$limit": page_count + 1,
-                },
-            ]
-        )
+    # Build aggregation pipeline
+    pipeline = [
+        {"$match": match_conditions},
+        {"$project": {"score": 1, **CARD_PROJECTION}},
+        {"$group": {"score": {"$max": "$score"}, **AGGREGATE_CARD}},
+        {
+            "$sort": {"score": -1, "_id": 1}
+        },  # Sort by score DESC, then _id ASC for consistency
     ]
 
+    # Add cursor filter if provided
+    if cursor:
+        # Cursor format: "score:oracle_id"
+        try:
+            cursor_score, cursor_id = cursor.split(":", 1)
+            cursor_score = float(cursor_score)
+            # Match documents with score < cursor_score OR (score == cursor_score AND _id > cursor_id)
+            pipeline.append(
+                {
+                    "$match": {
+                        "$or": [
+                            {"score": {"$lt": cursor_score}},
+                            {
+                                "$and": [
+                                    {"score": cursor_score},
+                                    {"_id": {"$gt": cursor_id}},
+                                ]
+                            },
+                        ]
+                    }
+                }
+            )
+        except (ValueError, IndexError):
+            # Invalid cursor format, ignore it
+            pass
+
+    # Add limit
+    pipeline.append({"$limit": page_count + 1})
+
+    # Execute aggregation
+    results = list(collection.aggregate(pipeline))
+
+    # Build pagination result
     result = {
         "cards": results[:page_count],
-        "cursor": str(results[-2]["score"]) if len(results) > page_count else None,
+        "cursor": (
+            f"{results[-2]['score']}:{results[-2]['_id']}"
+            if len(results) > page_count
+            else None
+        ),
         "has_more": len(results) > page_count,
     }
 

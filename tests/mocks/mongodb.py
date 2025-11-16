@@ -3,7 +3,7 @@
 This module provides in-memory mock implementations of MongoDB cursor and
 collection classes, enabling fast integration tests without external dependencies.
 
-Supports MongoDB query operators: $regex, $in, $nin, $all, $gte, $lte, $text, $search, $or, $and, $exists
+Supports MongoDB query operators: $regex, $in, $nin, $all, $size, $gte, $lte, $text, $search, $or, $and, $exists, $eq
 Supports aggregation stages: $match, $project, $group, $sort, $limit
 """
 
@@ -74,6 +74,7 @@ class MockMongoCollection:
             documents: List of document dictionaries.
         """
         self._documents = deepcopy(documents)
+        self._last_search_text = None  # Track last text search for scoring
 
     def find_one(
         self, query: dict, projection: Optional[dict] = None
@@ -157,6 +158,7 @@ class MockMongoCollection:
             elif field == "$text":
                 # Text search - simple implementation
                 search_text = condition.get("$search", "").lower()
+                self._last_search_text = search_text  # Save for scoring
                 doc_text = str(doc).lower()
                 if search_text not in doc_text:
                     return False
@@ -171,8 +173,14 @@ class MockMongoCollection:
                         if not re.search(value, str(field_value), re.IGNORECASE):
                             return False
                     elif operator == "$in":
-                        if field_value not in value:
-                            return False
+                        # Handle list fields (e.g., colors): check if ANY element matches
+                        if isinstance(field_value, list):
+                            if not any(item in value for item in field_value):
+                                return False
+                        # Handle scalar fields: check if value itself is in list
+                        else:
+                            if field_value not in value:
+                                return False
                     elif operator == "$nin":
                         if field_value in value:
                             return False
@@ -181,8 +189,19 @@ class MockMongoCollection:
                             return False
                         if not all(item in field_value for item in value):
                             return False
+                    elif operator == "$size":
+                        if not isinstance(field_value, list):
+                            return False
+                        if len(field_value) != value:
+                            return False
+                    elif operator == "$gt":
+                        if field_value is None or field_value <= value:
+                            return False
                     elif operator == "$gte":
                         if field_value is None or field_value < value:
+                            return False
+                    elif operator == "$lt":
+                        if field_value is None or field_value >= value:
                             return False
                     elif operator == "$lte":
                         if field_value is None or field_value > value:
@@ -257,22 +276,73 @@ class MockMongoCollection:
             return [doc for doc in documents if self._matches_query(doc, stage_spec)]
 
         elif stage_type == "$project":
-            # Project fields
-            return [self._apply_projection(doc, stage_spec) for doc in documents]
+            # Project fields with optional score calculation
+            projected = []
+            for doc in documents:
+                projected_doc = self._apply_projection(doc, stage_spec)
+
+                # Add text search score if requested
+                if stage_spec.get("score") == 1 and self._last_search_text:
+                    projected_doc["score"] = self._calculate_text_score(
+                        doc, self._last_search_text
+                    )
+
+                projected.append(projected_doc)
+            return projected
 
         elif stage_type == "$group":
             # Group documents
             return self._execute_group_stage(documents, stage_spec)
 
         elif stage_type == "$sort":
-            # Sort documents
-            sort_field = list(stage_spec.keys())[0]
-            direction = stage_spec[sort_field]
-            return sorted(
-                documents,
-                key=lambda doc: doc.get(sort_field, ""),
-                reverse=(direction == -1),
-            )
+            # Sort documents (supports multiple sort fields)
+            sort_fields = list(stage_spec.items())
+
+            def sort_key(doc):
+                # Return tuple of values for multi-field sort
+                return tuple(doc.get(field, "") for field, _ in sort_fields)
+
+            # Sort in reverse if first field is descending
+            # Multi-field sort with mixed directions needs custom comparison
+            if len(sort_fields) == 1:
+                field, direction = sort_fields[0]
+                return sorted(
+                    documents,
+                    key=lambda doc: doc.get(field, ""),
+                    reverse=(direction == -1),
+                )
+            else:
+                # Multi-field sort: use tuple comparison
+                def multi_sort_key(doc):
+                    values = []
+                    for field, direction in sort_fields:
+                        val = doc.get(field, "")
+                        # Negate numeric values for descending sort
+                        if direction == -1 and isinstance(val, (int, float)):
+                            val = -val
+                        elif direction == -1:
+                            # For strings, can't negate, so we'll handle in reverse
+                            pass
+                        values.append((direction, val))
+                    return values
+
+                # Custom comparator for mixed direction sorts
+                from functools import cmp_to_key
+
+                def compare(a, b):
+                    a_vals = multi_sort_key(a)
+                    b_vals = multi_sort_key(b)
+                    for (dir_a, val_a), (dir_b, val_b) in zip(a_vals, b_vals):
+                        if val_a < val_b:
+                            result = -1
+                        elif val_a > val_b:
+                            result = 1
+                        else:
+                            continue
+                        return result * dir_a  # Apply direction
+                    return 0
+
+                return sorted(documents, key=cmp_to_key(compare))
 
         elif stage_type == "$limit":
             # Limit documents
@@ -368,3 +438,36 @@ class MockMongoCollection:
                                 groups[key][field].append(value)
 
         return list(groups.values())
+
+    def _calculate_text_score(self, doc: dict, search_text: str) -> float:
+        """Calculate mock text search score for pagination testing.
+
+        Simulates MongoDB $text search score based on text relevance.
+        Higher scores indicate better matches. Uses deterministic scoring
+        for reproducible tests.
+
+        Args:
+            doc: Document to score
+            search_text: Search query text
+
+        Returns:
+            Score between 0.0 and 1.0
+        """
+        if not search_text:
+            return 0.5  # Default score
+
+        name = doc.get("name", "").lower()
+        oracle_text = doc.get("oracle_text", "").lower()
+        search = search_text.lower()
+
+        # Scoring rules (deterministic for testing):
+        if search == name:
+            return 1.0  # Perfect match
+        elif name.startswith(search):
+            return 0.9  # Prefix match
+        elif search in name:
+            return 0.8  # Substring match in name
+        elif search in oracle_text:
+            return 0.6  # Match in card text
+        else:
+            return 0.3  # Weak/generic match

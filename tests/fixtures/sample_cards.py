@@ -246,6 +246,165 @@ SOL_RING = {
     "reprint": False,
 }
 
+# Izzet Charm - Two-color (U/R) instant, CMC 2, uncommon
+IZZET_CHARM = {
+    "id": "b1c2d3e4-5f6a-7b8c-9d0e-1f2a3b4c5d6e",
+    "oracle_id": "c2d3e4f5-6a7b-8c9d-0e1f-2a3b4c5d6e7f",
+    "name": "Izzet Charm",
+    "name_search": "izzet charm",
+    "lang": "en",
+    "released_at": "2012-10-05",
+    "layout": "normal",
+    "cmc": 2.0,
+    "type_line": "Instant",
+    "oracle_text": "Choose one — • Counter target noncreature spell unless its controller pays {2}. • Izzet Charm deals 2 damage to target creature. • Draw two cards, then discard two cards.",
+    "mana_cost": "{U}{R}",
+    "colors": ["U", "R"],
+    "color_identity": ["U", "R"],
+    "rarity": "uncommon",
+    "set_name": "Return to Ravnica",
+    "set": "rtr",
+    "artist": "Zoltan Boros",
+    "image_uris": {
+        "small": "https://cards.scryfall.io/small/izzet-charm.jpg",
+        "normal": "https://cards.scryfall.io/normal/izzet-charm.jpg",
+        "large": "https://cards.scryfall.io/large/izzet-charm.jpg",
+        "png": "https://cards.scryfall.io/png/izzet-charm.png",
+        "art_crop": "https://cards.scryfall.io/art_crop/izzet-charm.jpg",
+        "border_crop": "https://cards.scryfall.io/border_crop/izzet-charm.jpg",
+    },
+    "promo": False,
+    "reprint": False,
+}
+
+# Giant Growth - Green instant, CMC 1, common
+GIANT_GROWTH = {
+    "id": "c3d4e5f6-7a8b-9c0d-1e2f-3a4b5c6d7e8f",
+    "oracle_id": "d4e5f6a7-8b9c-0d1e-2f3a-4b5c6d7e8f9a",
+    "name": "Giant Growth",
+    "name_search": "giant growth",
+    "lang": "en",
+    "released_at": "1993-08-05",
+    "layout": "normal",
+    "cmc": 1.0,
+    "type_line": "Instant",
+    "oracle_text": "Target creature gets +3/+3 until end of turn.",
+    "mana_cost": "{G}",
+    "colors": ["G"],
+    "color_identity": ["G"],
+    "rarity": "common",
+    "set_name": "Limited Edition Alpha",
+    "set": "lea",
+    "artist": "Sandra Everingham",
+    "image_uris": {
+        "small": "https://cards.scryfall.io/small/giant-growth.jpg",
+        "normal": "https://cards.scryfall.io/normal/giant-growth.jpg",
+        "large": "https://cards.scryfall.io/large/giant-growth.jpg",
+        "png": "https://cards.scryfall.io/png/giant-growth.png",
+        "art_crop": "https://cards.scryfall.io/art_crop/giant-growth.jpg",
+        "border_crop": "https://cards.scryfall.io/border_crop/giant-growth.jpg",
+    },
+    "promo": False,
+    "reprint": False,
+}
+
+# Serra Angel - White creature, CMC 5, uncommon
+SERRA_ANGEL = {
+    "id": "d5e6f7a8-9b0c-1d2e-3f4a-5b6c7d8e9f0a",
+    "oracle_id": "e6f7a8b9-0c1d-2e3f-4a5b-6c7d8e9f0a1b",
+    "name": "Serra Angel",
+    "name_search": "serra angel",
+    "lang": "en",
+    "released_at": "1993-08-05",
+    "layout": "normal",
+    "cmc": 5.0,
+    "type_line": "Creature — Angel",
+    "oracle_text": "Flying, vigilance",
+    "mana_cost": "{3}{W}{W}",
+    "colors": ["W"],
+    "color_identity": ["W"],
+    "power": "4",
+    "toughness": "4",
+    "rarity": "uncommon",
+    "set_name": "Limited Edition Alpha",
+    "set": "lea",
+    "artist": "Douglas Shuler",
+    "image_uris": {
+        "small": "https://cards.scryfall.io/small/serra-angel.jpg",
+        "normal": "https://cards.scryfall.io/normal/serra-angel.jpg",
+        "large": "https://cards.scryfall.io/large/serra-angel.jpg",
+        "png": "https://cards.scryfall.io/png/serra-angel.png",
+        "art_crop": "https://cards.scryfall.io/art_crop/serra-angel.jpg",
+        "border_crop": "https://cards.scryfall.io/border_crop/serra-angel.jpg",
+    },
+    "promo": False,
+    "reprint": False,
+}
+
+# Doom Blade - Black instant, CMC 2, common
+DOOM_BLADE = {
+    "id": "e7f8a9b0-1c2d-3e4f-5a6b-7c8d9e0f1a2b",
+    "oracle_id": "f8a9b0c1-2d3e-4f5a-6b7c-8d9e0f1a2b3c",
+    "name": "Doom Blade",
+    "name_search": "doom blade",
+    "lang": "en",
+    "released_at": "2010-07-16",
+    "layout": "normal",
+    "cmc": 2.0,
+    "type_line": "Instant",
+    "oracle_text": "Destroy target nonblack creature.",
+    "mana_cost": "{1}{B}",
+    "colors": ["B"],
+    "color_identity": ["B"],
+    "rarity": "common",
+    "set_name": "Magic 2011",
+    "set": "m11",
+    "artist": "Chippy",
+    "image_uris": {
+        "small": "https://cards.scryfall.io/small/doom-blade.jpg",
+        "normal": "https://cards.scryfall.io/normal/doom-blade.jpg",
+        "large": "https://cards.scryfall.io/large/doom-blade.jpg",
+        "png": "https://cards.scryfall.io/png/doom-blade.png",
+        "art_crop": "https://cards.scryfall.io/art_crop/doom-blade.jpg",
+        "border_crop": "https://cards.scryfall.io/border_crop/doom-blade.jpg",
+    },
+    "promo": False,
+    "reprint": False,
+}
+
+# Emrakul, the Aeons Torn - Colorless creature, CMC 15, mythic
+EMRAKUL = {
+    "id": "f9a0b1c2-3d4e-5f6a-7b8c-9d0e1f2a3b4c",
+    "oracle_id": "a0b1c2d3-4e5f-6a7b-8c9d-0e1f2a3b4c5d",
+    "name": "Emrakul, the Aeons Torn",
+    "name_search": "emrakul, the aeons torn",
+    "lang": "en",
+    "released_at": "2010-04-23",
+    "layout": "normal",
+    "cmc": 15.0,
+    "type_line": "Legendary Creature — Eldrazi",
+    "oracle_text": "Emrakul, the Aeons Torn can't be countered.\nWhen you cast this spell, take an extra turn after this one.\nFlying, protection from colored spells, annihilator 6\nWhen Emrakul is put into a graveyard from anywhere, its owner shuffles their graveyard into their library.",
+    "mana_cost": "{15}",
+    "colors": [],  # Colorless
+    "color_identity": [],
+    "power": "15",
+    "toughness": "15",
+    "rarity": "mythic",
+    "set_name": "Rise of the Eldrazi",
+    "set": "roe",
+    "artist": "Mark Tedin",
+    "image_uris": {
+        "small": "https://cards.scryfall.io/small/emrakul.jpg",
+        "normal": "https://cards.scryfall.io/normal/emrakul.jpg",
+        "large": "https://cards.scryfall.io/large/emrakul.jpg",
+        "png": "https://cards.scryfall.io/png/emrakul.png",
+        "art_crop": "https://cards.scryfall.io/art_crop/emrakul.jpg",
+        "border_crop": "https://cards.scryfall.io/border_crop/emrakul.jpg",
+    },
+    "promo": False,
+    "reprint": False,
+}
+
 
 def get_all_sample_cards() -> list[dict]:
     """Get all sample cards as a list.
@@ -261,6 +420,11 @@ def get_all_sample_cards() -> list[dict]:
         PROGENITUS,
         DELVER_OF_SECRETS,
         SOL_RING,
+        IZZET_CHARM,
+        GIANT_GROWTH,
+        SERRA_ANGEL,
+        DOOM_BLADE,
+        EMRAKUL,
     ]
 
 

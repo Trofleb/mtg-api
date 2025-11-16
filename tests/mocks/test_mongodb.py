@@ -332,3 +332,187 @@ def test_and_operator():
 
     assert len(results) == 2
     assert all(1.0 <= r["cmc"] <= 2.0 for r in results)
+
+
+@pytest.mark.unit
+def test_size_operator():
+    """Test find with $size operator for exact array length matching.
+
+    This validates:
+    - $size operator filters arrays by exact length
+    - Works correctly for empty arrays (size=0)
+    - Works correctly for multi-element arrays
+    - Returns no matches when size doesn't match
+    """
+    collection = MockMongoCollection(SAMPLE_CARDS)
+
+    # Find cards with exactly 2 colors (none in sample data)
+    cursor = collection.find({"colors": {"$size": 2}})
+    results = list(cursor)
+    assert len(results) == 0
+
+    # Find cards with exactly 1 color
+    cursor = collection.find({"colors": {"$size": 1}})
+    results = list(cursor)
+    assert len(results) == 2  # Lightning Bolt (R), Counterspell (U)
+    names = [r["name"] for r in results]
+    assert "Lightning Bolt" in names
+    assert "Counterspell" in names
+
+    # Find cards with exactly 0 colors (colorless)
+    cursor = collection.find({"colors": {"$size": 0}})
+    results = list(cursor)
+    assert len(results) == 1
+    assert results[0]["name"] == "Black Lotus"
+
+    # Find cards with exactly 5 colors
+    cursor = collection.find({"colors": {"$size": 5}})
+    results = list(cursor)
+    assert len(results) == 1
+    assert results[0]["name"] == "Progenitus"
+
+
+@pytest.mark.unit
+def test_size_and_all_operators_combined():
+    """Test $size and $all operators together for exact color matching.
+
+    This simulates the 'exactly' color operator from CardFilter:
+    - Card must have ALL specified colors ($all)
+    - Card must have EXACTLY that many colors ($size)
+
+    This is critical for Phase 5 search endpoint testing.
+    """
+    # Add a two-color card to test data
+    cards_with_multicolor = SAMPLE_CARDS + [
+        {
+            "id": "5",
+            "name": "Izzet Charm",
+            "colors": ["U", "R"],
+            "cmc": 2.0,
+            "rarity": "uncommon",
+            "set_name": "Return to Ravnica",
+        }
+    ]
+    collection = MockMongoCollection(cards_with_multicolor)
+
+    # Find cards with exactly U and R (no more, no less)
+    cursor = collection.find({"colors": {"$all": ["U", "R"], "$size": 2}})
+    results = list(cursor)
+
+    assert len(results) == 1
+    assert results[0]["name"] == "Izzet Charm"
+    assert results[0]["colors"] == ["U", "R"]
+
+    # Verify Progenitus is NOT included (has U+R but also W+B+G)
+    cursor = collection.find({"colors": {"$all": ["U", "R"], "$size": 2}})
+    results = list(cursor)
+    names = [r["name"] for r in results]
+    assert "Progenitus" not in names
+
+
+@pytest.mark.unit
+def test_text_search_score_in_aggregation():
+    """Test that text search score is added to $project stage.
+
+    This validates:
+    - $text search stores search query for scoring
+    - $project with score:1 adds calculated score
+    - Score is deterministic based on match quality
+    - Score simulation is ready for pagination testing
+    """
+    # Add oracle_text field to sample data for scoring
+    cards_with_text = [
+        {
+            "id": "1",
+            "name": "Lightning Bolt",
+            "oracle_text": "Lightning Bolt deals 3 damage to any target.",
+            "cmc": 1.0,
+        },
+        {
+            "id": "2",
+            "name": "Counterspell",
+            "oracle_text": "Counter target spell.",
+            "cmc": 2.0,
+        },
+        {
+            "id": "3",
+            "name": "Lightning Strike",
+            "oracle_text": "Lightning Strike deals 3 damage to any target.",
+            "cmc": 2.0,
+        },
+    ]
+    collection = MockMongoCollection(cards_with_text)
+
+    pipeline = [
+        {"$match": {"$text": {"$search": "lightning"}}},
+        {"$project": {"score": 1, "name": 1, "cmc": 1}},
+    ]
+
+    results = list(collection.aggregate(pipeline))
+
+    # Should find cards matching "lightning"
+    assert len(results) >= 2  # Lightning Bolt and Lightning Strike
+
+    # All results should have score field
+    assert all("score" in r for r in results)
+
+    # Scores should be > 0
+    assert all(r["score"] > 0.0 for r in results)
+
+    # Both cards should score 0.9 (name starts with "lightning")
+    bolt = next((r for r in results if r["name"] == "Lightning Bolt"), None)
+    assert bolt is not None
+    assert bolt["score"] == 0.9  # Prefix match
+
+    # Lightning Strike should also score 0.9 (starts with "lightning")
+    strike = next((r for r in results if r["name"] == "Lightning Strike"), None)
+    assert strike is not None
+    assert strike["score"] == 0.9  # Prefix match
+
+
+@pytest.mark.unit
+def test_text_search_score_sorting():
+    """Test that text search scores can be used for sorting (pagination).
+
+    This validates:
+    - Scores can be sorted descending (highest first)
+    - Score-based pagination is supported
+    - Deterministic scoring for reproducible tests
+    """
+    cards_with_text = [
+        {"id": "1", "name": "Lightning Bolt", "oracle_text": "deals damage"},
+        {"id": "2", "name": "Lightning Strike", "oracle_text": "deals damage"},
+        {"id": "3", "name": "Chain Lightning", "oracle_text": "deals damage"},
+        {"id": "4", "name": "Shock", "oracle_text": "lightning fast"},
+    ]
+    collection = MockMongoCollection(cards_with_text)
+
+    pipeline = [
+        {"$match": {"$text": {"$search": "lightning"}}},
+        {"$project": {"score": 1, "name": 1}},
+        {"$sort": {"score": -1}},  # Sort by score descending
+    ]
+
+    results = list(collection.aggregate(pipeline))
+
+    # Verify sorting: higher scores first
+    assert len(results) >= 3
+
+    # Lightning Bolt should be first (score=0.9, prefix match)
+    # Lightning Strike should be second (score=0.9, prefix match)
+    # Chain Lightning should be third (score=0.8, substring match)
+    # Shock should be last (score=0.6, text match only)
+
+    # First two can be in any order (both score 0.9)
+    first_two = results[:2]
+    first_two_names = {r["name"] for r in first_two}
+    assert "Lightning Bolt" in first_two_names
+    assert "Lightning Strike" in first_two_names
+    assert all(r["score"] == 0.9 for r in first_two)
+
+    assert results[2]["name"] == "Chain Lightning"
+    assert results[2]["score"] == 0.8
+
+    # Verify scores are in descending order
+    scores = [r["score"] for r in results]
+    assert scores == sorted(scores, reverse=True)
