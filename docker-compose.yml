@@ -1,6 +1,7 @@
 services:
   api:
     platform: linux/x86_64
+    image: ghcr.io/trofleb/mtg-api/api:latest
     build:
       context: .
       dockerfile: api.dockerfile
@@ -36,6 +37,7 @@ services:
       start_period: 30s
   app:
     platform: linux/x86_64
+    image: ghcr.io/trofleb/mtg-api/app:latest
     build:
       context: .
       dockerfile: app.dockerfile
@@ -69,6 +71,7 @@ services:
       start_period: 45s
   web-app:
     platform: linux/x86_64
+    image: ghcr.io/trofleb/mtg-api/web-app:latest
     build:
       context: ./web-app
       dockerfile: Dockerfile
@@ -91,6 +94,7 @@ services:
       start_period: 30s
   huey:
     platform: linux/x86_64
+    image: ghcr.io/trofleb/mtg-api/huey:latest
     build:
       context: .
       dockerfile: huey.dockerfile
@@ -121,6 +125,7 @@ services:
       start_period: 60s
   mcp:
     platform: linux/x86_64
+    image: ghcr.io/trofleb/mtg-api/mcp:latest
     build:
       context: .
       dockerfile: mcp.dockerfile
