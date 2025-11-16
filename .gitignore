@@ -23,6 +23,7 @@ eggs/
 .eggs/
 lib/
 lib64/
+!web-app/lib/
 parts/
 sdist/
 var/

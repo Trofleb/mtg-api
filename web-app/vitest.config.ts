@@ -12,6 +12,12 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
     css: true,
+    exclude: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/e2e/**", // Exclude Playwright e2e tests
+      "**/.next/**",
+    ],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
@@ -22,6 +28,7 @@ export default defineConfig({
         "**/types/**",
         "**/__tests__/**",
         "**/test/**",
+        "**/e2e/**",
       ],
     },
   },
