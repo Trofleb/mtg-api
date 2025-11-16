@@ -1,8 +1,13 @@
 name: Release
+
 on:
   push:
     branches:
       - main
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository }}
 
 permissions:
   contents: read
@@ -63,27 +68,31 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ needs.release.outputs.version }}
+
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Login to GitHub Container Registry
+
+      - name: Login to ${{ env.REGISTRY }}
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Extract metadata
+
+      - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}/api
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/api
           tags: |
-            type=raw,value=latest
-            type=raw,value=${{ needs.release.outputs.version }}
+            type=semver,pattern={{version}},value=${{ needs.release.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ needs.release.outputs.version }}
+            type=raw,value=latest,enable={{is_default_branch}}
           labels: |
             org.opencontainers.image.title=MTG API
             org.opencontainers.image.description=FastAPI backend for MTG data
-            org.opencontainers.image.version=${{ needs.release.outputs.version }}
-      - name: Build and push
+
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -91,8 +100,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/api:buildcache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/api:buildcache,mode=max
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/mtg-api/api:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/mtg-api/api:buildcache,mode=max
 
   docker-build-app:
     name: Build and Push Streamlit App Image
@@ -107,27 +116,31 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ needs.release.outputs.version }}
+
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Login to GitHub Container Registry
+
+      - name: Login to ${{ env.REGISTRY }}
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Extract metadata
+
+      - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}/app
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/app
           tags: |
-            type=raw,value=latest
-            type=raw,value=${{ needs.release.outputs.version }}
+            type=semver,pattern={{version}},value=${{ needs.release.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ needs.release.outputs.version }}
+            type=raw,value=latest,enable={{is_default_branch}}
           labels: |
             org.opencontainers.image.title=MTG Streamlit App
             org.opencontainers.image.description=Streamlit frontend for MTG data
-            org.opencontainers.image.version=${{ needs.release.outputs.version }}
-      - name: Build and push
+
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -135,8 +148,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/app:buildcache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/app:buildcache,mode=max
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/mtg-api/app:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/mtg-api/app:buildcache,mode=max
 
   docker-build-web-app:
     name: Build and Push Web App Image
@@ -151,27 +164,31 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ needs.release.outputs.version }}
+
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Login to GitHub Container Registry
+
+      - name: Login to ${{ env.REGISTRY }}
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Extract metadata
+
+      - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}/web-app
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/web-app
           tags: |
-            type=raw,value=latest
-            type=raw,value=${{ needs.release.outputs.version }}
+            type=semver,pattern={{version}},value=${{ needs.release.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ needs.release.outputs.version }}
+            type=raw,value=latest,enable={{is_default_branch}}
           labels: |
             org.opencontainers.image.title=MTG Web App
             org.opencontainers.image.description=Next.js frontend for MTG card search
-            org.opencontainers.image.version=${{ needs.release.outputs.version }}
-      - name: Build and push
+
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: ./web-app
@@ -179,8 +196,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/web-app:buildcache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/web-app:buildcache,mode=max
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/mtg-api/web-app:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/mtg-api/web-app:buildcache,mode=max
 
   docker-build-huey:
     name: Build and Push Huey Worker Image
@@ -195,27 +212,31 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ needs.release.outputs.version }}
+
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Login to GitHub Container Registry
+
+      - name: Login to ${{ env.REGISTRY }}
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Extract metadata
+
+      - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}/huey
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/huey
           tags: |
-            type=raw,value=latest
-            type=raw,value=${{ needs.release.outputs.version }}
+            type=semver,pattern={{version}},value=${{ needs.release.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ needs.release.outputs.version }}
+            type=raw,value=latest,enable={{is_default_branch}}
           labels: |
             org.opencontainers.image.title=MTG Huey Worker
             org.opencontainers.image.description=Background task worker for MTG data processing
-            org.opencontainers.image.version=${{ needs.release.outputs.version }}
-      - name: Build and push
+
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -223,8 +244,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/huey:buildcache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/huey:buildcache,mode=max
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/mtg-api/huey:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/mtg-api/huey:buildcache,mode=max
 
   docker-build-mcp:
     name: Build and Push MCP Server Image
@@ -239,27 +260,31 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ needs.release.outputs.version }}
+
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Login to GitHub Container Registry
+
+      - name: Login to ${{ env.REGISTRY }}
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Extract metadata
+
+      - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}/mcp
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/mcp
           tags: |
-            type=raw,value=latest
-            type=raw,value=${{ needs.release.outputs.version }}
+            type=semver,pattern={{version}},value=${{ needs.release.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ needs.release.outputs.version }}
+            type=raw,value=latest,enable={{is_default_branch}}
           labels: |
             org.opencontainers.image.title=MTG MCP Server
             org.opencontainers.image.description=Model Context Protocol server for MTG data
-            org.opencontainers.image.version=${{ needs.release.outputs.version }}
-      - name: Build and push
+
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -267,5 +292,5 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/mcp:buildcache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/mcp:buildcache,mode=max
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/mtg-api/mcp:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/mtg-api/mcp:buildcache,mode=max
