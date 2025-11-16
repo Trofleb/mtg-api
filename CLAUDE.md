@@ -42,6 +42,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `just test` - Run pytest with test dependencies
 - `just test-cov` - Run tests with coverage report
 - `just test-file <file>` - Run tests for specific file
+
+**E2E Testing (Playwright):**
+- `just test-e2e-vps` - Run e2e tests with VPS API (recommended - auto tunnel setup/teardown)
+- `just test-e2e-ui-vps` - Interactive UI mode with VPS API tunnel
+- `just test-e2e-vps-tunnel` - Start SSH tunnel to VPS API manually
+- `just test-e2e-vps-tunnel-stop` - Stop VPS API tunnel
+- `just test-e2e` - Run e2e tests (requires API at localhost:8000)
+- `just test-e2e-ui` - Interactive UI mode
+- `just test-e2e-headed` - Run with visible browser
+- `just test-e2e-debug` - Debug mode with inspector
+- `just test-e2e-report` - Show HTML test report
+
+**Code Quality:**
 - `just lint` - Run ruff linting
 - `just lint-fix` - Run ruff with auto-fix
 - `just format` - Format code with ruff
@@ -119,7 +132,9 @@ This is a multi-service application with separate containers for:
 - **Framework**: Next.js 16 with App Router, TypeScript (strict mode), Tailwind CSS 4
 - **UI Components**: shadcn/ui for modern, accessible components
 - **Code Quality**: Biome for linting and formatting
-- **Testing**: Vitest with React Testing Library and jsdom
+- **Testing**:
+  - **Unit Tests**: Vitest with React Testing Library and jsdom
+  - **E2E Tests**: Playwright for end-to-end testing
 - **Package Manager**: pnpm for dependency management
 - **Features**: Modern MTG card search with advanced filtering
 - **Structure**:
@@ -128,6 +143,7 @@ This is a multi-service application with separate containers for:
   - `lib/`: Utility functions and API client
   - `components/ui/`: shadcn/ui components
   - `test/`: Testing utilities and custom render functions
+  - `e2e/`: Playwright end-to-end test files
 - **Development**:
   - `pnpm dev` - Start development server on port 3000
   - `pnpm build` - Build for production
@@ -138,12 +154,31 @@ This is a multi-service application with separate containers for:
   - `pnpm test:run` - Run tests once and exit
   - `pnpm test:ui` - Run tests with Vitest UI
   - `pnpm test:coverage` - Run tests with coverage report
-- **Testing Setup**:
+  - `pnpm test:e2e` - Run Playwright e2e tests (use `--reporter=list` to prevent hanging)
+  - `pnpm test:e2e:ui` - Run Playwright in interactive UI mode
+  - `pnpm test:e2e:headed` - Run Playwright with visible browser
+  - `pnpm test:e2e:debug` - Run Playwright in debug mode with inspector
+  - `pnpm test:e2e:report` - View HTML report of Playwright test results
+- **Unit Testing Setup**:
   - **Configuration**: `vitest.config.ts` with React plugin and path alias support
   - **Setup File**: `vitest.setup.ts` with Next.js mocks (navigation, Image, Link) and ResizeObserver
   - **Test Utils**: `test/test-utils.tsx` with custom render function including userEvent
   - **Coverage**: Configured with v8 provider, excludes config files and node_modules
   - **Test Files**: `*.test.ts` and `*.test.tsx` files located next to source files
+- **E2E Testing Setup**:
+  - **Configuration**: `playwright.config.ts` with Chromium browser and automatic dev server startup
+  - **Test Files**: `e2e/*.spec.ts` files for end-to-end testing
+  - **Features Tested**: Card search, filtering, API integration, user interactions
+  - **API Testing**: Direct HTTP testing via Playwright's request fixture
+  - **Web Server**: Automatically starts Next.js dev/production server before tests
+  - **Browsers**: Chromium (Firefox and WebKit available but commented out)
+  - **Debugging**: Trace on first retry, screenshots/videos on failure only
+  - **VPS Integration**: SSH tunnel support for testing against VPS API via `docker-compose.vps-dev.yml`
+  - **Running Tests**:
+    - **Recommended**: `just test-e2e-vps` - Automatic VPS tunnel setup and cleanup
+    - **Interactive**: `just test-e2e-ui-vps` - UI mode with VPS API
+    - **Manual**: `just test-e2e` (requires API at localhost:8000)
+    - **Homepage only**: `pnpm run test:e2e e2e/homepage.spec.ts` (no API needed)
 - **Docker**: Standalone Dockerfile with multi-stage builds for production
 
 ### Background Tasks (`tasks/`)

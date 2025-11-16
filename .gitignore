@@ -239,3 +239,8 @@ override.tf.json
 terraform.rc
 
 # End of https://www.toptal.com/developers/gitignore/api/terraform,python,react
+
+# Playwright test results
+web-app/test-results/
+web-app/playwright-report/
+web-app/playwright/.cache/

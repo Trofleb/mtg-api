@@ -175,6 +175,8 @@ IK_PRODUCT_ID=your_product_id
 
 ## Testing
 
+### Python Unit Tests
+
 ```bash
 # Run all tests
 just test
@@ -185,6 +187,37 @@ just test-cov
 # Run specific test file
 just test-file tests/test_api.py
 ```
+
+### End-to-End Tests (Playwright)
+
+The Next.js web app includes comprehensive e2e tests using Playwright.
+
+**Running E2E Tests**:
+```bash
+# Automatic - starts VPS tunnel, runs tests, cleans up
+just test-e2e-vps
+
+# Run specific test file
+just test-e2e-vps e2e/homepage.spec.ts
+
+# Interactive UI mode with VPS
+just test-e2e-ui-vps
+```
+
+**Homepage Tests Only** (no API required):
+```bash
+cd web-app
+pnpm run test:e2e e2e/homepage.spec.ts
+```
+
+**Other Commands**:
+```bash
+just test-e2e-headed    # Run with visible browser
+just test-e2e-debug     # Debug mode with inspector
+just test-e2e-report    # View HTML test report
+```
+
+For more details, see [`web-app/e2e/README.md`](web-app/e2e/README.md).
 
 ## Project Structure
 

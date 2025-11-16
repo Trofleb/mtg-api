@@ -31,6 +31,7 @@ export function CardGrid({ cards, onCardClick }: CardGridProps) {
             key={`${card.id}-${index}`}
             className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
             onClick={() => onCardClick(card)}
+            data-testid="card-item"
           >
             <CardContent className="p-0">
               {/* Card Image */}

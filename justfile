@@ -102,6 +102,53 @@ test-watch:
 test-file file:
     uv run --extra tests pytest {{file}} -v
 
+# E2E Testing (Playwright - web-app)
+# Note: E2E tests require API access. Use test-e2e-vps for VPS tunnel setup.
+
+# Start VPS SSH tunnel for e2e testing
+test-e2e-vps-tunnel:
+    @echo "🔗 Starting SSH tunnel to VPS API..."
+    @echo "📡 This creates a tunnel to VPS API at localhost:8000"
+    docker-compose -f docker-compose.vps-dev.yml up ssh-tunnel -d
+    @echo "⏳ Waiting for tunnel to be ready..."
+    @sleep 10
+    @curl -s http://localhost:8000/ping && echo "✅ VPS API tunnel ready" || echo "❌ Tunnel failed"
+
+# Stop VPS SSH tunnel
+test-e2e-vps-tunnel-stop:
+    @echo "🛑 Stopping SSH tunnel..."
+    docker-compose -f docker-compose.vps-dev.yml down
+
+# Run e2e tests (requires API - use test-e2e-vps for automatic VPS setup)
+test-e2e *args:
+    cd web-app && pnpm run test:e2e {{args}}
+
+# Run e2e tests with VPS API tunnel (automatic setup)
+test-e2e-vps *args:
+    @echo "🚀 Running e2e tests with VPS API..."
+    just test-e2e-vps-tunnel
+    cd web-app && pnpm run test:e2e {{args}}; EXIT_CODE=$?; just test-e2e-vps-tunnel-stop; exit $EXIT_CODE
+
+test-e2e-ui:
+    cd web-app && pnpm run test:e2e:ui
+
+# Run e2e tests in UI mode with VPS API tunnel
+test-e2e-ui-vps:
+    @echo "🚀 Starting e2e UI mode with VPS API..."
+    @echo "⚠️  Press Ctrl+C to stop both tests and tunnel"
+    @echo ""
+    just test-e2e-vps-tunnel
+    cd web-app && pnpm run test:e2e:ui; just test-e2e-vps-tunnel-stop
+
+test-e2e-headed:
+    cd web-app && pnpm run test:e2e:headed
+
+test-e2e-debug:
+    cd web-app && pnpm run test:e2e:debug
+
+test-e2e-report:
+    cd web-app && pnpm run test:e2e:report
+
 # Code quality
 lint:
     uv run --extra dev ruff check .
