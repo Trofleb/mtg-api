@@ -124,7 +124,7 @@ curl http://localhost:8000/ping
 ## Configuration
 
 Playwright config (`playwright.config.ts`):
-- Base URL: `http://localhost:3000`
+- Base URL: `http://localhost:8080`
 - Browser: Chromium
 - Timeout: 30s per test
 - Retries: 2 in CI, 0 locally

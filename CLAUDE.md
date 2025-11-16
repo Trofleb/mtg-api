@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `docker-compose up` - Start all services (API, app, web-app, database, cache, etc.)
 - `docker-compose up api` - Start only the FastAPI service on port 8000
 - `docker-compose up app` - Start only the Streamlit app on port 8501
-- `docker-compose up web-app` - Start only the Next.js app on port 3000
+- `docker-compose up web-app` - Start only the Next.js app on port 8080
 - `docker-compose up huey` - Start only the background task worker
 - `docker-compose logs -f <service>` - Follow logs for specific service
 
@@ -78,7 +78,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Key Services
 - API: FastAPI application running on port 8000
 - App: Streamlit application running on port 8501
-- Web App: Next.js application running on port 3000 (modern card search interface)
+- Web App: Next.js application running on port 8080 (modern card search interface)
 - Database: MongoDB on port 27017 with username/password: root/root
 - Cache: Redis on port 6379
 - Search: Meilisearch on port 7700
@@ -141,7 +141,7 @@ This is a multi-service application with separate containers for:
   - `test/`: Testing utilities and custom render functions
   - `e2e/`: Playwright end-to-end test files
 - **Development**:
-  - `pnpm dev` - Start development server on port 3000
+  - `pnpm dev` - Start development server on port 8080 (internally runs on 3000, mapped to 8080 in Docker)
   - `pnpm build` - Build for production
   - `pnpm lint` - Run Biome linter
   - `pnpm format` - Format code with Biome

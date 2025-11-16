@@ -128,14 +128,14 @@ docker-compose up
 # Start specific services
 docker-compose up api      # FastAPI on :8000
 docker-compose up app      # Streamlit on :8501
-docker-compose up web-app  # Next.js on :3000
+docker-compose up web-app  # Next.js on :8080
 ```
 
 ### Available Services
 
 - **API**: http://localhost:8000 (FastAPI with Swagger docs at /docs)
 - **Streamlit App**: http://localhost:8501
-- **Next.js Web App**: http://localhost:3000
+- **Next.js Web App**: http://localhost:8080
 - **MongoDB**: localhost:27017 (root/root)
 - **Meilisearch**: http://localhost:7700
 - **Redis**: localhost:6379
