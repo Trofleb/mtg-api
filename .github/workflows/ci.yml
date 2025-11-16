@@ -16,6 +16,8 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
 
       - name: Setup Python
         run: uv python install 3.13
@@ -38,110 +40,51 @@ jobs:
           file: ./coverage.xml
           fail_ci_if_error: false
 
-  docker-build-api:
+  test-web-app:
     runs-on: ubuntu-latest
-    needs: test
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Check for API changes
-        uses: dorny/paths-filter@v3
-        id: filter
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
-          filters: |
-            api:
-              - 'api/**'
-              - 'common/**'
-              - 'api.dockerfile'
-              - 'pyproject.toml'
-              - 'uv.lock'
+          version: 10.14.0
+          run_install: false
 
-      - name: Setup Docker Buildx
-        if: steps.filter.outputs.api == 'true'
-        uses: docker/setup-buildx-action@v3
+      - name: Get pnpm store directory
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
-      - name: Build API image
-        if: steps.filter.outputs.api == 'true'
-        uses: docker/build-push-action@v6
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
         with:
-          context: .
-          file: api.dockerfile
-          push: false
-          tags: mtg-api:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
-  docker-build-app:
-    runs-on: ubuntu-latest
-    needs: test
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Check for App changes
-        uses: dorny/paths-filter@v3
-        id: filter
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          filters: |
-            app:
-              - 'app/**'
-              - 'common/**'
-              - 'app.dockerfile'
-              - 'pyproject.toml'
-              - 'uv.lock'
+          node-version: "20"
 
-      - name: Setup Docker Buildx
-        if: steps.filter.outputs.app == 'true'
-        uses: docker/setup-buildx-action@v3
+      - name: Install dependencies
+        working-directory: web-app
+        run: pnpm install --frozen-lockfile
 
-      - name: Build App image
-        if: steps.filter.outputs.app == 'true'
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: app.dockerfile
-          push: false
-          tags: mtg-app:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+      - name: Lint
+        working-directory: web-app
+        run: pnpm run check
 
-  docker-build-huey:
-    runs-on: ubuntu-latest
-    needs: test
+      - name: Type check
+        working-directory: web-app
+        run: pnpm run typecheck
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Check for Huey changes
-        uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            huey:
-              - 'tasks/**'
-              - 'common/**'
-              - 'huey.dockerfile'
-              - 'pyproject.toml'
-              - 'uv.lock'
-
-      - name: Setup Docker Buildx
-        if: steps.filter.outputs.huey == 'true'
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build Huey image
-        if: steps.filter.outputs.huey == 'true'
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: huey.dockerfile
-          push: false
-          tags: mtg-huey:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+      - name: Run unit tests
+        working-directory: web-app
+        run: pnpm run test:run
 
   scripts-test:
     runs-on: ubuntu-latest
@@ -152,6 +95,9 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
 
       - name: Setup Python
         run: uv python install 3.13

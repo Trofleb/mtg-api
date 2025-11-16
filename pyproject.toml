@@ -80,3 +80,20 @@ package = false
 [tool.uv.pip]
 # Use PyPI as primary index
 index-url = "https://pypi.org/simple"
+
+# pytest configuration
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+markers = [
+    "unit: Unit tests that don't require external services",
+    "integration: Integration tests using TestClient with mocked dependencies",
+]
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--tb=short",
+]

@@ -1,0 +1,105 @@
+# Docker Compose configuration for VPS development environment
+# This file is used for local development connecting to VPS backend
+#
+# Usage:
+#   docker-compose -f docker-compose.vps-dev.yml up
+#   OR
+#   just dev-web-vps
+#
+# Requirements:
+#   - 1Password with SSH agent enabled (Developer settings → SSH Agent)
+#   - SSH key for VPS stored in 1Password
+#   - VPS API running and accessible
+#   - .env file with VPS connection details (see .env.example)
+#
+# Environment Variables (set in .env):
+#   VPS_HOST        - VPS hostname or IP address (required)
+#   VPS_USER        - SSH username for VPS (required)
+#   VPS_API_PORT    - API port on VPS (default: 8000)
+#   OP_SSH_SOCKET   - Path to 1Password SSH agent socket (optional, auto-detected)
+#
+# This configuration:
+#   - Runs only web-app service locally with hot reload
+#   - Creates SSH tunnel to VPS API automatically
+#   - No local database, cache, or other services needed
+
+services:
+  # SSH tunnel service - automatically creates tunnel to VPS
+  ssh-tunnel:
+    image: alpine:latest
+    container_name: mtg-vps-tunnel
+    restart: on-failure:3
+    # Install openssh-client and netcat, then establish tunnel using 1Password SSH agent
+    command: >
+      sh -c "apk add --no-cache openssh-client netcat-openbsd socat &&
+      mkdir -p /root/.ssh &&
+      echo '🔗 Creating SSH tunnel to VPS API...' &&
+      echo '📡 VPS: ${VPS_HOST}' &&
+      echo '👤 User: ${VPS_USER}' &&
+      echo '🚪 Tunnel: Container port ${VPS_API_PORT} -> VPS:${VPS_API_PORT}' &&
+      echo '🔒 Docker restricts host binding to localhost only' &&
+      echo '🔑 Using 1Password SSH agent' &&
+      echo '🔒 Host key verification enabled' &&
+      ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -L 0.0.0.0:${VPS_API_PORT}:localhost:${VPS_API_PORT} ${VPS_USER}@${VPS_HOST} -N"
+    volumes:
+      # Mount 1Password SSH agent socket (path set via OP_SSH_SOCKET env var)
+      - ${OP_SSH_SOCKET}:/tmp/agent.sock
+      # Mount SSH known_hosts for host key verification
+      - ${HOME}/.ssh/known_hosts:/root/.ssh/known_hosts:ro
+    environment:
+      # Configure SSH to use 1Password agent
+      - SSH_AUTH_SOCK=/tmp/agent.sock
+      # VPS connection details from .env
+      - VPS_HOST=${VPS_HOST}
+      - VPS_USER=${VPS_USER}
+      - VPS_API_PORT=${VPS_API_PORT:-8000}
+    ports:
+      # Expose VPS API on localhost only (not on all interfaces)
+      - "127.0.0.1:${VPS_API_PORT:-8000}:${VPS_API_PORT:-8000}"
+    networks:
+      - vps-dev-network
+    healthcheck:
+      test: ["CMD", "sh", "-c", "nc -z localhost $${VPS_API_PORT:-8000}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # Web-app service - development mode with hot reload
+  web-app:
+    platform: linux/x86_64
+    build:
+      context: ./web-app
+      dockerfile: Dockerfile.dev
+    container_name: mtg-web-app-dev
+    restart: on-failure:3
+    volumes:
+      # Mount source code for hot reload
+      - ./web-app:/app
+      # Preserve Next.js cache in container for faster rebuilds
+      - web-app-next:/app/.next
+    environment:
+      # Point to VPS API via tunnel service
+      - NEXT_PUBLIC_API_URL=http://ssh-tunnel:8000
+      - NODE_ENV=development
+    ports:
+      # Expose web-app on localhost only (not on all interfaces)
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      ssh-tunnel:
+        condition: service_healthy
+    networks:
+      - vps-dev-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+networks:
+  vps-dev-network:
+    driver: bridge
+
+volumes:
+  web-app-next:

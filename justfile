@@ -59,6 +59,24 @@ docker-up-app:
 docker-up-mcp:
     docker-compose up mcp
 
+docker-up-web:
+    docker-compose up web-app
+
+# VPS development - web-app with hot reload connecting to VPS API
+dev-web-vps:
+    @echo "🚀 Starting web-app in VPS development mode..."
+    @echo "📡 This will create an SSH tunnel to VPS and run web-app with hot reload"
+    @echo "🔗 Web app will be available at: http://localhost:3000"
+    @echo "🔗 VPS API will be tunneled at: http://localhost:8000"
+    @echo ""
+    @echo "⚙️  Using docker-compose.vps-dev.yml configuration"
+    docker-compose -f docker-compose.vps-dev.yml up
+
+# Stop VPS development environment
+dev-web-vps-down:
+    @echo "🛑 Stopping VPS development environment..."
+    docker-compose -f docker-compose.vps-dev.yml down
+
 docker-down:
     docker-compose down
 
@@ -83,6 +101,68 @@ test-watch:
 
 test-file file:
     uv run --extra tests pytest {{file}} -v
+
+# E2E Testing (Playwright - web-app)
+# Recommended: `just test-e2e-vps` - automatic VPS tunnel with cleanup
+
+# Run e2e tests with VPS API (automatic tunnel setup and cleanup)
+test-e2e-vps *args:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "🚀 Running e2e tests with VPS API..."
+    echo "🔗 Starting SSH tunnel to VPS API..."
+    docker-compose -f docker-compose.vps-dev.yml up ssh-tunnel -d
+    echo "⏳ Waiting for tunnel..."
+    sleep 3
+    if curl -sf http://localhost:8000/ping > /dev/null; then
+        echo "✅ VPS API ready"
+        cd web-app && pnpm run test:e2e --reporter=list {{args}}
+        EXIT_CODE=$?
+    else
+        echo "❌ VPS API tunnel failed"
+        EXIT_CODE=1
+    fi
+    echo "🛑 Stopping tunnel..."
+    docker-compose -f docker-compose.vps-dev.yml down
+    exit $EXIT_CODE
+
+# Run e2e tests in UI mode with VPS API
+test-e2e-ui-vps:
+    #!/usr/bin/env bash
+    echo "🚀 Starting e2e UI mode with VPS API..."
+    echo "📡 Starting tunnel..."
+    docker-compose -f docker-compose.vps-dev.yml up ssh-tunnel -d
+    sleep 3
+    if curl -sf http://localhost:8000/ping > /dev/null; then
+        echo "✅ VPS API ready"
+        echo "⚠️  Press Ctrl+C when done, then run: just test-e2e-vps-tunnel-stop"
+        cd web-app && pnpm run test:e2e:ui
+    else
+        echo "❌ Tunnel failed"
+    fi
+
+# Run e2e tests (requires API at localhost:8000)
+test-e2e *args:
+    cd web-app && pnpm run test:e2e --reporter=list {{args}}
+
+# Interactive UI mode (requires API at localhost:8000)
+test-e2e-ui:
+    cd web-app && pnpm run test:e2e:ui
+
+# Debug mode with inspector
+test-e2e-debug:
+    cd web-app && pnpm run test:e2e:debug
+
+# Start VPS tunnel manually (use test-e2e-vps instead)
+test-e2e-vps-tunnel:
+    @echo "🔗 Starting VPS tunnel..."
+    @docker-compose -f docker-compose.vps-dev.yml up ssh-tunnel -d
+    @sleep 3
+    @curl -sf http://localhost:8000/ping && echo "✅ Ready" || echo "❌ Failed"
+
+# Stop VPS tunnel
+test-e2e-vps-tunnel-stop:
+    @docker-compose -f docker-compose.vps-dev.yml down
 
 # Code quality
 lint:

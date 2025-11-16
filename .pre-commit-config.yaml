@@ -28,3 +28,17 @@ repos:
         args: [--fix]
       # Run the formatter.
       - id: ruff-format
+  - repo: local
+    hooks:
+      - id: biome-check
+        name: Biome check (web-app)
+        entry: bash -c 'cd web-app && pnpm run check:fix'
+        language: system
+        files: ^web-app/.*\.(ts|tsx|js|jsx|json)$
+        pass_filenames: false
+      - id: typescript-check
+        name: TypeScript check (web-app)
+        entry: bash -c 'cd web-app && pnpm run typecheck'
+        language: system
+        files: ^web-app/.*\.(ts|tsx)$
+        pass_filenames: false
