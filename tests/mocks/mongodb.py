@@ -3,7 +3,7 @@
 This module provides in-memory mock implementations of MongoDB cursor and
 collection classes, enabling fast integration tests without external dependencies.
 
-Supports MongoDB query operators: $regex, $in, $all, $gte, $lte, $text, $search, $or, $and, $exists
+Supports MongoDB query operators: $regex, $in, $nin, $all, $gte, $lte, $text, $search, $or, $and, $exists
 Supports aggregation stages: $match, $project, $group, $sort, $limit
 """
 
@@ -172,6 +172,9 @@ class MockMongoCollection:
                             return False
                     elif operator == "$in":
                         if field_value not in value:
+                            return False
+                    elif operator == "$nin":
+                        if field_value in value:
                             return False
                     elif operator == "$all":
                         if not isinstance(field_value, list):
